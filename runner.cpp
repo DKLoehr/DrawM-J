@@ -17,7 +17,7 @@ void Runner::Init() {
     graphs.setTexture(pic->getTexture());
 
     grid = Grid(window, sf::Vector2i(0, HEIGHT_OFFSET), (sf::Vector2i)window->getSize(),
-                sf::Vector2f(-2, 1), sf::Vector2f(-1.5, 1.5));
+                sf::Vector2f(-2.5, 2.5), sf::Vector2f(-2.5, 2.5));
 
     fct = new parser::Tree("Z^2 + C");
 
@@ -137,15 +137,23 @@ void Runner::ActivateButtons(sf::Event event) {
 
 void Runner::UpdateGraph(sf::Vector2f topLeft, sf::Vector2f botRight) {
     grid.SetRangeCorners(topLeft, botRight);
-    for(double iii = topLeft.x; iii < botRight.x; iii += ITERATION_DELTA) {        // Iterate horizontally, left to right
-        for(double jjj = topLeft.y; jjj > botRight.y; jjj -= ITERATION_DELTA) {    // Iterate vertically, top-to-bottom
-            sf::CircleShape loc = sf::CircleShape(1);
-            loc.setPosition(grid.GraphToPic(iii,jjj));
-            loc.setFillColor(Colorgen(Iterate(cx(iii, jjj))));
-            pic->draw(loc);
+    int winSizeX = window->getSize().x,
+        winSizeY = window->getSize().y - HEIGHT_OFFSET;
+    sf::Vector2<double> pixelDelta = sf::Vector2<double>((botRight.x - topLeft.x) / winSizeX, // Distance on the graph between the pixels on the window
+                                                         (topLeft.y - botRight.y) / winSizeY);
+    for(double iii = 0; iii < winSizeY; iii = iii + 1) {         // Iterate vertically
+        for(double jjj = 0; jjj < winSizeX; jjj = jjj + 1) {     // Iterate horizontally
+            sf::Vector2f graphCoords = sf::Vector2f(topLeft + sf::Vector2f(pixelDelta.x * jjj, -pixelDelta.y * iii));
+            /*sf::CircleShape loc = sf::CircleShape(1);*/
+            sf::Vertex loc = sf::Vertex(grid.GraphToPic(graphCoords),
+                                        Colorgen(Iterate(cx(graphCoords.x, graphCoords.y))));
+            //loc.setPosition(grid.GraphToPic(iii,jjj));
+            //loc.setColor(Colorgen(Iterate(cxsf::Vector2f(topLeft + sf::Vector2f(pixelDelta.x * jjj, pixelDelta.y * iii))));
+            pic->draw(&loc, 1, sf::Points);
             window->draw(graphs); // Draw the updated graph to the screen
             pic->display(); // Update our graph with the newest points
             window->display();
+            //std::cout << graphCoords.x << ", " << graphCoords.y << "\n";
         }
     }
 }
