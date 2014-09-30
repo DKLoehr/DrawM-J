@@ -1,0 +1,69 @@
+#ifndef GRID_H
+#define GRID_H
+
+#include <SFML/Graphics.hpp>
+
+/**
+* This class represents the graph onto which you might draw functions.
+* It consists of an x (horizontal) and y (vertical) axis, with either evenly spaced tick marks or full lines,
+* as well as labels on the axes to indicate scale.
+**/
+
+class Grid
+{
+private:
+    /// The window to which we draw
+    sf::RenderWindow* m_w;
+    /// The font we use for the axis labels
+    sf::Font m_f;
+
+    /// The original size of the window
+    sf::Vector2u m_origWin;
+
+
+    /** The following are all relative to the WINDOW, not the graph **/
+    /// The coordinates of the top-left corner of the grid on the window
+    sf::Vector2i m_position;
+    /// Height and width of the grid
+    sf::Vector2i m_size;
+
+
+    /** The following are all relative to the GRAPH **/
+    /// The coordinates of the center of the grid (usually (0,0))
+    sf::Vector2f m_center;
+    /// How far from the center we go in the x and y directions
+    sf::Vector2f m_xRange;
+    sf::Vector2f m_yRange;
+
+public:
+    /// Default constructor: Will not create a usable grid!
+    Grid();
+
+    Grid(sf::RenderWindow* w, sf::Vector2i topLeft, sf::Vector2i botRight,
+         sf::Vector2f xRange, sf::Vector2f yRange);
+
+    /// Move the grid to a new position on the window
+    void SetPosition(sf::Vector2i pos);
+    void SetPosition(int xPos, int yPos);
+
+
+    /** Functions for modifying the window and changing settings -- Primarily for the user **/
+
+    /// Set the range shown in the window for x and y; 0 or negative means "use current range" for that axis
+    void SetRange(sf::Vector2f xRange, sf::Vector2f yRange);
+
+
+    /** Functions for converting from graph coordinates to window coordinates and vice-versa **/
+
+    /// Given the location on the window, returns the coordinates of the point on the graph
+    sf::Vector2f WindowToGraph(sf::Vector2f wLoc);
+    sf::Vector2f WindowToGraph(double xPos, double yPos);
+    /// Given the location on the graph, returns the coordinates of the pixel on the window
+    sf::Vector2f GraphToWindow(sf::Vector2f gLoc);
+    sf::Vector2f GraphToWindow(double xPos, double yPos);
+    /// Given the location on the graph, returns the coordinates of the pixel on the canvas
+    sf::Vector2f GraphToPic(sf::Vector2f gLoc);
+    sf::Vector2f GraphToPic(double xPos, double yPos);
+};
+
+#endif // GRID_H
