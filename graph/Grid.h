@@ -49,8 +49,10 @@ public:
 
     /** Functions for modifying the window and changing settings -- Primarily for the user **/
 
-    /// Set the range shown in the window for x and y; 0 or negative means "use current range" for that axis
+    /// Set the range shown in the window for x and y;
     void SetRange(sf::Vector2f xRange, sf::Vector2f yRange);
+    /// Set the range by giving the graph locations of the top left and bottom right corners
+    void SetRangeCorners(sf::Vector2f topLeft, sf::Vector2f botRight);
 
 
     /** Functions for converting from graph coordinates to window coordinates and vice-versa **/
@@ -64,6 +66,12 @@ public:
     /// Given the location on the graph, returns the coordinates of the pixel on the canvas
     sf::Vector2f GraphToPic(sf::Vector2f gLoc);
     sf::Vector2f GraphToPic(double xPos, double yPos);
+
+
+    /** Functions for getting information from the grid **/
+    /// Returns the graph locations of the top right and bottom left corners of the graph, respectively
+    sf::Vector2f GetGraphTopLeft();
+    sf::Vector2f GetGraphBotRight();
 };
 
 #endif // GRID_H

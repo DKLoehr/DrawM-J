@@ -10,21 +10,23 @@ Runner::Runner(sf::RenderWindow* w, sf::Font* font, sf::RenderTexture* p) :
 
 
 void Runner::Init() {
-    pic->clear(sf::Color::Blue);
+    numIterations = 0;
+
+    pic->clear(sf::Color::White);
     graphs.setPosition(0, HEIGHT_OFFSET);
     graphs.setTexture(pic->getTexture());
 
     grid = Grid(window, sf::Vector2i(0, HEIGHT_OFFSET), (sf::Vector2i)window->getSize(),
                 sf::Vector2f(-2, 1), sf::Vector2f(-1.5, 1.5));
 
-    fct = new parser::Tree("Z^2 - C");
+    fct = new parser::Tree("Z^2 + C");
 
     elements = std::vector<GUI*>(0);
 
     /** GUI Creation **/
     iterations = InputBox(window, inFont, 5, 5, 350, 15, "Number of Iterations"); // 1
 
-    okIterations = Button(window, inFont, iterations.GetPosition().x + iterations.GetSize().x + 7, iterations.GetPosition().y,
+    okIterations = Button(window, inFont, iterations.GetPosition().x + iterations.GetSize().x + 210, iterations.GetPosition().y,
                         108, 15, "Save Changes"); // 0
     elements.push_back(&okIterations);
 
@@ -117,7 +119,7 @@ void Runner::StepActiveElement(bool increment) {
 
 void Runner::UpdateIterations() {
     numIterations = ToInt((std::string)iterations.GetText()); // Set numIterations to the number specified in the box
-    //UpdateGraphs();
+    UpdateGraph(grid.GetGraphTopLeft(), grid.GetGraphBotRight());
 }
 
 void Runner::ActivateButtons(sf::Event event) {
@@ -133,9 +135,21 @@ void Runner::ActivateButtons(sf::Event event) {
     }
 }
 
-void Runner::UpdateGraphs(sf::Vector2f topLeft, sf::Vector2f botRight) {
-
+void Runner::UpdateGraph(sf::Vector2f topLeft, sf::Vector2f botRight) {
+    grid.SetRangeCorners(topLeft, botRight);
+    for(double iii = topLeft.x; iii < botRight.x; iii += ITERATION_DELTA) {        // Iterate horizontally, left to right
+        for(double jjj = topLeft.y; jjj > botRight.y; jjj -= ITERATION_DELTA) {    // Iterate vertically, top-to-bottom
+            sf::CircleShape loc = sf::CircleShape(1);
+            loc.setPosition(grid.GraphToPic(iii,jjj));
+            loc.setFillColor(Colorgen(Iterate(cx(iii, jjj))));
+            pic->draw(loc);
+            window->draw(graphs); // Draw the updated graph to the screen
+            pic->display(); // Update our graph with the newest points
+            window->display();
+        }
+    }
 }
+
 void Runner::ClearPic() {
     pic->clear(sf::Color::White);   // Clear the canvas (pic) to be fully white
 }
@@ -143,7 +157,7 @@ void Runner::ClearPic() {
 sf::Color Runner::Colorgen(int seed) {
     if(seed > numIterations) // Didn't go out from the circle, so it's in the set as far as we know
         return sf::Color::Black;
-    return HSVtoRGB(seed % 255, 1, 1); // Loop the colors every 255 iterations
+    return HSVtoRGB((seed * 10) % 255, 1, 1); // Loop the colors
 }
 
 void Runner::Draw() {

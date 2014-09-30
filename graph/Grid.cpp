@@ -1,6 +1,7 @@
 #include "Grid.h"
 #include <string>
 #include <cmath>
+#include <iostream>
 
 Grid::Grid() {
 
@@ -31,6 +32,11 @@ void Grid::SetRange(sf::Vector2f xRange, sf::Vector2f yRange) {
     m_yRange = yRange;
     m_center = sf::Vector2f((m_xRange.x + m_xRange.y) / 2,
                             (m_yRange.x + m_yRange.y) / 2);
+}
+
+void Grid::SetRangeCorners(sf::Vector2f topLeft, sf::Vector2f botRight) {
+    SetRange(sf::Vector2f(topLeft.x, botRight.x),
+             sf::Vector2f(botRight.y, topLeft.y));
 }
 
 sf::Vector2f Grid::WindowToGraph(sf::Vector2f wLoc) {
@@ -81,4 +87,12 @@ sf::Vector2f Grid::GraphToPic(sf::Vector2f gLoc) {
 
 sf::Vector2f Grid::GraphToPic(double xPos, double yPos) {
     return GraphToPic(sf::Vector2f(xPos, yPos));
+}
+
+sf::Vector2f Grid::GetGraphTopLeft() {
+    return sf::Vector2f(m_xRange.x, m_yRange.y);
+}
+
+sf::Vector2f Grid::GetGraphBotRight() {
+    return sf::Vector2f(m_xRange.y, m_yRange.x);
 }
