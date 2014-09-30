@@ -76,18 +76,11 @@ int Runner::Iterate(cx pos) {
     if(abs(pos) > 2)    // If we're starting outside our circle of radius 2, we're already done
         return 0;       // Took 0 iterations to get ourside the circle, so return 0
 
-    fct->setVar("C", pos); // Feed our current location into parser as the variable C (what we're subtracting from Z^2)
-    pos = cx(0,0); // We've stored pos's value in the tree, so now we'll repurpose it to be what we're iterating
+    cx newPos(0,0); // Start iterating from the origin
 
     for(int iii = 0; iii < numIterations; iii++) {
-        fct->setVar("Z", pos); // Feed our current location into parser as the variable Z
-        try {
-            pos = fct->eval(); // Don't change position, so we can make it black first
-        }
-        catch (std::invalid_argument) { // Should mean we've "reached infinity", so we can stop
-            return iii;
-        }
-        if(abs(pos) > 2)    // If we've gone outside our circle of radius 2, we're done
+        newPos = newPos * newPos + pos;
+        if(abs(newPos) > 2)    // If we've gone outside our circle of radius 2, we're done
             return iii + 1; // Return the number of iterations it took to get outside the circle
     }
     return numIterations + 1;   // If we didn't return in the for loop, then we're still inside the circle; return number of iterations performed
@@ -144,13 +137,13 @@ void Runner::UpdateGraph(sf::Vector2f topLeft, sf::Vector2f botRight) {
     sf::Vector2f graphCoords = topLeft;
     for(int iii = 0; iii < winSizeY; iii++) {         // Iterate vertically
         for(int jjj = 0; jjj < winSizeX; jjj++) {     // Iterate horizontally
-            graphCoords.x = graphCoords.x + pixelDeltaX;
             sf::Vertex loc(grid.GraphToPic(graphCoords),
                            Colorgen(Iterate(cx(graphCoords.x, graphCoords.y))));
             pic->draw(&loc, 1, sf::Points);
+            graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
         }
         graphCoords.x = topLeft.x;                      // Reset x coordinate
-        graphCoords.y = graphCoords.y - pixelDeltaY;    // Decrement y coordinate
+        graphCoords.y = graphCoords.y - pixelDeltaY;    // Move one pixel down
         window->draw(graphs); // Draw the updated graph to the screen after each line of pixels
         pic->display(); // Update our graph with the newest points
         window->display();
