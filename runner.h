@@ -9,7 +9,6 @@
 #include "graph/Grid.h"
 
 #define HEIGHT_OFFSET 40        // The number of pixels between the top of the window and the top of the graphs
-#define ITERATION_DELTA .05     // Distance on the graph between the points that we iterate
 
 class Runner
 {

@@ -1,7 +1,6 @@
 #include "Grid.h"
 #include <string>
 #include <cmath>
-#include <iostream>
 
 Grid::Grid() {
 
