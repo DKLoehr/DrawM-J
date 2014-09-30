@@ -25,7 +25,7 @@
 #define MAX_CONST_LEN 3
 using namespace std;
 
-typedef std::complex<double> cx;
+typedef std::complex<long double> cx;
 
 namespace parser {
 template <typename T> std::string toString(T t); //To convert numeric types to strings

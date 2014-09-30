@@ -74,7 +74,7 @@ cx pow(cx base, cx a) {
 	return std::pow(base, a);
 }
 cx log(cx base, cx a) {
-	if(base == PARSER_E || base ==0.0)
+	if(base.real() == PARSER_E || base.real() == 0.0)
 		return std::log(a);
 	else return std::log(a) / std::log(base);
 }

@@ -3,6 +3,8 @@
 
 #include <SFML/Graphics.hpp>
 
+typedef sf::Vector2<long double> Vector2ld;
+
 /**
 * This class represents the graph onto which you might draw functions.
 * It consists of an x (horizontal) and y (vertical) axis, with either evenly spaced tick marks or full lines,
@@ -30,17 +32,17 @@ private:
 
     /** The following are all relative to the GRAPH **/
     /// The coordinates of the center of the grid (usually (0,0))
-    sf::Vector2f m_center;
+    Vector2ld m_center;
     /// How far from the center we go in the x and y directions
-    sf::Vector2f m_xRange;
-    sf::Vector2f m_yRange;
+    Vector2ld m_xRange;
+    Vector2ld m_yRange;
 
 public:
     /// Default constructor: Will not create a usable grid!
     Grid();
 
     Grid(sf::RenderWindow* w, sf::Vector2i topLeft, sf::Vector2i botRight,
-         sf::Vector2f xRange, sf::Vector2f yRange);
+         Vector2ld xRange, Vector2ld yRange);
 
     /// Move the grid to a new position on the window
     void SetPosition(sf::Vector2i pos);
@@ -50,9 +52,9 @@ public:
     /** Functions for modifying the window and changing settings -- Primarily for the user **/
 
     /// Set the range shown in the window for x and y;
-    void SetRange(sf::Vector2f xRange, sf::Vector2f yRange);
+    void SetRange(Vector2ld xRange, Vector2ld yRange);
     /// Set the range by giving the graph locations of the top left and bottom right corners
-    void SetRangeCorners(sf::Vector2f topLeft, sf::Vector2f botRight);
+    void SetRangeCorners(Vector2ld topLeft, Vector2ld botRight);
 
 
     /** Functions for converting from graph coordinates to window coordinates and vice-versa **/
@@ -70,8 +72,8 @@ public:
 
     /** Functions for getting information from the grid **/
     /// Returns the graph locations of the top right and bottom left corners of the graph, respectively
-    sf::Vector2f GetGraphTopLeft();
-    sf::Vector2f GetGraphBotRight();
+    Vector2ld GetGraphTopLeft();
+    Vector2ld GetGraphBotRight();
 };
 
 #endif // GRID_H

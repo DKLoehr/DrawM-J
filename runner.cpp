@@ -17,7 +17,7 @@ void Runner::Init() {
     graphs.setTexture(pic->getTexture());
 
     grid = Grid(window, sf::Vector2i(0, HEIGHT_OFFSET), (sf::Vector2i)window->getSize(),
-                sf::Vector2f(-2.1, .8), sf::Vector2f(-1.25, 1.25));
+                Vector2ld(-2.1, .8), Vector2ld(-1.25, 1.25));
 
     firstCorner = NULL;
 
@@ -69,11 +69,13 @@ void Runner::HandleEvents() {
                 ActivateButtons(event);
             } else { // In one of the graphs
                 if(firstCorner == NULL) // Aren't currently selecting a rectangle
-                    firstCorner = new sf::Vector2f(grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y));
+                    firstCorner = new Vector2ld(grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).x,
+                                                grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).y);
                 else {
-                    sf::Vector2f secondCorner = grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y);
-                    UpdateGraph(sf::Vector2f(min(firstCorner->x, secondCorner.x), min(firstCorner->y, secondCorner.y)),
-                                sf::Vector2f(max(firstCorner->x, secondCorner.x), max(firstCorner->y, secondCorner.y)));
+                    Vector2ld secondCorner = Vector2ld(grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).x,
+                                                       grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).y);
+                    UpdateGraph(Vector2ld(min(firstCorner->x, secondCorner.x), max(firstCorner->y, secondCorner.y)),
+                                Vector2ld(max(firstCorner->x, secondCorner.x), min(firstCorner->y, secondCorner.y)));
                     delete firstCorner;
                     firstCorner = NULL;
                 }
@@ -138,16 +140,16 @@ void Runner::ActivateButtons(sf::Event event) {
     }
 }
 
-void Runner::UpdateGraph(sf::Vector2f topLeft, sf::Vector2f botRight) {
+void Runner::UpdateGraph(Vector2ld topLeft, Vector2ld botRight) {
     grid.SetRangeCorners(topLeft, botRight);
     int winSizeX = window->getSize().x,
         winSizeY = window->getSize().y - HEIGHT_OFFSET;
-    double pixelDeltaX = (botRight.x - topLeft.x) / winSizeX, // Distance on the graph between the pixels on the window
-           pixelDeltaY = (topLeft.y - botRight.y) / winSizeY;
-    sf::Vector2f graphCoords = topLeft;
+    long double pixelDeltaX = (botRight.x - topLeft.x) / winSizeX, // Distance on the graph between the pixels on the window
+                pixelDeltaY = (topLeft.y - botRight.y) / winSizeY;
+    Vector2ld graphCoords = topLeft;
     for(int iii = 0; iii < winSizeY; iii++) {         // Iterate vertically
         for(int jjj = 0; jjj < winSizeX; jjj++) {     // Iterate horizontally
-            sf::Vertex loc(grid.GraphToPic(graphCoords),
+            sf::Vertex loc(grid.GraphToPic(sf::Vector2f(graphCoords.x, graphCoords.y)),
                            Colorgen(Iterate(cx(graphCoords.x, graphCoords.y))));
             pic->draw(&loc, 1, sf::Points);
             graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right

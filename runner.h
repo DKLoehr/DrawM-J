@@ -25,7 +25,7 @@ private:
 
     Grid grid;                  // An invisible set of axes used to keep track of our current graph location
 
-    sf::Vector2f* firstCorner;
+    Vector2ld* firstCorner;
 
     std::vector<GUI*> elements;  // An alternate way of accessing each gui element
     const int elementsSize = 2; // Initial size of elements (without any variables)
@@ -40,7 +40,7 @@ private:
     void SetActiveElement(double x, double y);  // Determines what activeBox should be based on the mouse coordinates; x and y are window coords to test
     void StepActiveElement(bool increment);     // Increases activeBox by 1 if true, decreases if false, keeping it in valid bounds
     void UpdateIterations();                    // Update numIterations according to what's in the box
-    void UpdateGraph(sf::Vector2f topLeft, sf::Vector2f botRight); // Update the graph given the positions of the top left and bottom right corner
+    void UpdateGraph(Vector2ld topLeft, Vector2ld botRight); // Update the graph given the positions of the top left and bottom right corner
     void ActivateButtons(sf::Event event);      // Activate buttons depending on activeBox and/or the event; event is the event that activated a button
 
     void ClearPic(); // Clear all points drawn to pic

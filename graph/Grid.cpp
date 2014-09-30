@@ -7,7 +7,7 @@ Grid::Grid() {
 }
 
 Grid::Grid(sf::RenderWindow* w, sf::Vector2i topLeft, sf::Vector2i botRight,
-           sf::Vector2f xRange, sf::Vector2f yRange) :
+           Vector2ld xRange, Vector2ld yRange) :
            m_w(w)
 {
     m_origWin = m_w->getSize();
@@ -26,16 +26,16 @@ void Grid::SetPosition(int xPos, int yPos) {
     m_position = sf::Vector2i(xPos, yPos);
 }
 
-void Grid::SetRange(sf::Vector2f xRange, sf::Vector2f yRange) {
+void Grid::SetRange(Vector2ld xRange, Vector2ld yRange) {
     m_xRange = xRange;
     m_yRange = yRange;
-    m_center = sf::Vector2f((m_xRange.x + m_xRange.y) / 2,
+    m_center = Vector2ld((m_xRange.x + m_xRange.y) / 2,
                             (m_yRange.x + m_yRange.y) / 2);
 }
 
-void Grid::SetRangeCorners(sf::Vector2f topLeft, sf::Vector2f botRight) {
-    SetRange(sf::Vector2f(topLeft.x, botRight.x),
-             sf::Vector2f(botRight.y, topLeft.y));
+void Grid::SetRangeCorners(Vector2ld topLeft, Vector2ld botRight) {
+    SetRange(Vector2ld(topLeft.x, botRight.x),
+             Vector2ld(botRight.y, topLeft.y));
 }
 
 sf::Vector2f Grid::WindowToGraph(sf::Vector2f wLoc) {
@@ -88,10 +88,10 @@ sf::Vector2f Grid::GraphToPic(double xPos, double yPos) {
     return GraphToPic(sf::Vector2f(xPos, yPos));
 }
 
-sf::Vector2f Grid::GetGraphTopLeft() {
-    return sf::Vector2f(m_xRange.x, m_yRange.y);
+Vector2ld Grid::GetGraphTopLeft() {
+    return Vector2ld(m_xRange.x, m_yRange.y);
 }
 
-sf::Vector2f Grid::GetGraphBotRight() {
-    return sf::Vector2f(m_xRange.y, m_yRange.x);
+Vector2ld Grid::GetGraphBotRight() {
+    return Vector2ld(m_xRange.y, m_yRange.x);
 }
