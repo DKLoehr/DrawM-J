@@ -139,18 +139,21 @@ void Runner::UpdateGraph(sf::Vector2f topLeft, sf::Vector2f botRight) {
     grid.SetRangeCorners(topLeft, botRight);
     int winSizeX = window->getSize().x,
         winSizeY = window->getSize().y - HEIGHT_OFFSET;
-    sf::Vector2<double> pixelDelta = sf::Vector2<double>((botRight.x - topLeft.x) / winSizeX, // Distance on the graph between the pixels on the window
-                                                         (topLeft.y - botRight.y) / winSizeY);
-    for(double iii = 0; iii < winSizeY; iii++) {         // Iterate vertically
-        for(double jjj = 0; jjj < winSizeX; jjj++) {     // Iterate horizontally
-            sf::Vector2f graphCoords = sf::Vector2f(topLeft + sf::Vector2f(pixelDelta.x * jjj, -pixelDelta.y * iii));
-            sf::Vertex loc = sf::Vertex(grid.GraphToPic(graphCoords),
-                                        Colorgen(Iterate(cx(graphCoords.x, graphCoords.y))));
+    double pixelDeltaX = (botRight.x - topLeft.x) / winSizeX, // Distance on the graph between the pixels on the window
+           pixelDeltaY = (topLeft.y - botRight.y) / winSizeY;
+    sf::Vector2f graphCoords = topLeft;
+    for(int iii = 0; iii < winSizeY; iii++) {         // Iterate vertically
+        for(int jjj = 0; jjj < winSizeX; jjj++) {     // Iterate horizontally
+            graphCoords.x = graphCoords.x + pixelDeltaX;
+            sf::Vertex loc(grid.GraphToPic(graphCoords),
+                           Colorgen(Iterate(cx(graphCoords.x, graphCoords.y))));
             pic->draw(&loc, 1, sf::Points);
-            window->draw(graphs); // Draw the updated graph to the screen
-            pic->display(); // Update our graph with the newest points
-            window->display();
         }
+        graphCoords.x = topLeft.x;                      // Reset x coordinate
+        graphCoords.y = graphCoords.y - pixelDeltaY;    // Decrement y coordinate
+        window->draw(graphs); // Draw the updated graph to the screen after each line of pixels
+        pic->display(); // Update our graph with the newest points
+        window->display();
     }
 }
 
@@ -158,10 +161,10 @@ void Runner::ClearPic() {
     pic->clear(sf::Color::White);   // Clear the canvas (pic) to be fully white
 }
 
-sf::Color Runner::Colorgen(int seed) {
+inline sf::Color Runner::Colorgen(int seed) {
     if(seed > numIterations) // Didn't go out from the circle, so it's in the set as far as we know
         return sf::Color::Black;
-    return HSVtoRGB((seed * 10) % 255, 1, 1); // Loop the colors
+    return HSVtoRGBOp((seed * 10) % 360); // Loop the colors
 }
 
 void Runner::Draw() {
@@ -181,7 +184,7 @@ void Runner::Draw() {
 }
 
 // Converts a string with a number in it to an integer containing that number
-int Runner::ToInt(std::string str) {
+inline int Runner::ToInt(std::string str) {
     int ret = 0;
     for(int i = str.length() - 1; i >= 0; i--) {
         ret += pow(10, str.length() - 1 - i) * (str[i] - '0');
@@ -191,8 +194,8 @@ int Runner::ToInt(std::string str) {
 
 // Convert HSV color values to RGB color values
 sf::Color Runner::HSVtoRGB(int hue, double sat, double val) {
-    hue %= 360;
     while(hue < 0) hue += 360;
+    hue %= 360;
 
     if(sat < 0) sat = 0.0;
     if(sat > 1) sat = 1.0;
@@ -216,5 +219,24 @@ sf::Color Runner::HSVtoRGB(int hue, double sat, double val) {
         case 3: return sf::Color(p * 255, q * 255, val * 255);
         case 4: return sf::Color(t * 255, p * 255, val * 255);
         case 5: return sf::Color(val * 255, p * 255, q * 255);
+    }
+}
+
+// Optimizations: assume sat and val always == 1
+inline sf::Color Runner::HSVtoRGBOp(int hue) {
+    int h = hue / 60;
+    float f = float(hue) / 60 - h;
+    float q = 1 - f;
+
+    switch(h)
+    {
+        default:
+        case 0:
+        case 6: return sf::Color(255, f * 255, 0);
+        case 1: return sf::Color(q * 255, 255, 0);
+        case 2: return sf::Color(0, 255, f * 255);
+        case 3: return sf::Color(0, q * 255, 255);
+        case 4: return sf::Color(f * 255, 0, 255);
+        case 5: return sf::Color(255, 0, q * 255);
     }
 }

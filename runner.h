@@ -48,6 +48,7 @@ private:
     /// Helpful functions
     int ToInt(std::string str);
     sf::Color HSVtoRGB(int hue, double sat, double val); // Convert HSV color values to RGB color values
+    sf::Color HSVtoRGBOp(int hue); // Optimized version of HSVto RGB for our purposes
 
 public:
     Runner(sf::RenderWindow* w, sf::Font* font, sf::RenderTexture* p); // Constructor
