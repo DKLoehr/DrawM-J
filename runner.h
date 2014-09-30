@@ -25,6 +25,8 @@ private:
 
     Grid grid;                  // An invisible set of axes used to keep track of our current graph location
 
+    sf::Vector2f* firstCorner;
+
     std::vector<GUI*> elements;  // An alternate way of accessing each gui element
     const int elementsSize = 2; // Initial size of elements (without any variables)
 

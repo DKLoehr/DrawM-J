@@ -8,7 +8,7 @@ int main() {
     //if(!inFont.loadFromFile(resourcePath() + "VeraMono.ttf")) // For Macs; comment out if on Windows or Linux
     //    return -1;
 
-    sf::RenderWindow window(sf::VideoMode(1200, 724), "Complex Paint Revamped");
+    sf::RenderWindow window(sf::VideoMode(1200, 750), "Complex Paint Revamped");
     window.setPosition(sf::Vector2i(0, 0));
 
     sf::RenderTexture pic;

@@ -17,7 +17,9 @@ void Runner::Init() {
     graphs.setTexture(pic->getTexture());
 
     grid = Grid(window, sf::Vector2i(0, HEIGHT_OFFSET), (sf::Vector2i)window->getSize(),
-                sf::Vector2f(-2.5, 2.5), sf::Vector2f(-2.5, 2.5));
+                sf::Vector2f(-2.1, .8), sf::Vector2f(-1.25, 1.25));
+
+    firstCorner = NULL;
 
     fct = new parser::Tree("Z^2 + C");
 
@@ -66,7 +68,15 @@ void Runner::HandleEvents() {
             if(event.mouseButton.y < HEIGHT_OFFSET) { // Above the graphs
                 ActivateButtons(event);
             } else { // In one of the graphs
-                /** Eventually zoom in on place in between clicking locations **/
+                if(firstCorner == NULL) // Aren't currently selecting a rectangle
+                    firstCorner = new sf::Vector2f(grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y));
+                else {
+                    sf::Vector2f secondCorner = grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y);
+                    UpdateGraph(sf::Vector2f(min(firstCorner->x, secondCorner.x), min(firstCorner->y, secondCorner.y)),
+                                sf::Vector2f(max(firstCorner->x, secondCorner.x), max(firstCorner->y, secondCorner.y)));
+                    delete firstCorner;
+                    firstCorner = NULL;
+                }
             }
         }
     }
