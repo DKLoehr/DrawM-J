@@ -20,6 +20,12 @@ void Runner::Init() {
                 Vector2ld(-2.05, .75), Vector2ld(-1.15, 1.15));
 
     firstCorner = NULL;
+    box = sf::VertexArray(sf::LinesStrip, 5);
+    box[0] = sf::Vertex(sf::Vector2f(0, 0), sf::Color(100, 100, 100));
+    box[1] = box[0];
+    box[2] = box[0];
+    box[3] = box[0];
+    box[4] = box[0];
 
     fct = new parser::Tree("Z^2 + C");
 
@@ -58,8 +64,10 @@ void Runner::HandleEvents() {
         } else if(event.type == sf::Event::MouseMoved) {
             if(event.mouseMove.y < HEIGHT_OFFSET) // Upper part of the screen
                 SetActiveElement(event.mouseMove.x, event.mouseMove.y);
-            else {
-                ///In graphs, do something
+            else { // In the graph
+                    box[1].position = sf::Vector2f(event.mouseMove.x, box[0].position.y);
+                    box[2].position = sf::Vector2f(event.mouseMove.x, event.mouseMove.y);
+                    box[3].position = sf::Vector2f(box[0].position.x, event.mouseMove.y);
             }
         } else if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Tab) {
             StepActiveElement(!(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) ||
@@ -68,9 +76,15 @@ void Runner::HandleEvents() {
             if(event.mouseButton.y < HEIGHT_OFFSET) { // Above the graphs
                 ActivateButtons(event);
             } else { // In one of the graphs
-                if(firstCorner == NULL) // Aren't currently selecting a rectangle
+                if(firstCorner == NULL) {   // Aren't currently selecting a rectangle
                     firstCorner = new Vector2ld(grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).x, // Graph coordinates of the first corner
                                                 grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).y);
+                    box[0].position = sf::Vector2f(event.mouseButton.x, event.mouseButton.y);
+                    box[1] = box[0];
+                    box[2] = box[0];
+                    box[3] = box[0];
+                    box[4] = box[0];
+                }
                 else { // We've already had the first corner selected
                     Vector2ld secondCorner(grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).x, // Graph coordinates of the second corner
                                            grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).y);
@@ -94,10 +108,6 @@ void Runner::HandleEvents() {
                                                 (grid.GetGraphBotRight().y - grid.GetGraphTopLeft().y) /
                                                 (clickBR.y - clickTL.y);
                         UpdateGraph(Vector2ld(TLx, TLy), Vector2ld(BRx, BRy));
-                        /*UpdateGraph(Vector2ld(grid.GetGraphTopLeft().x * grid.GetGraphTopLeft().x / clickTL.x,
-                                              grid.GetGraphTopLeft().y * grid.GetGraphTopLeft().y / clickTL.y),
-                                    Vector2ld(grid.GetGraphBotRight().x * grid.GetGraphBotRight().x / clickBR.x,
-                                              grid.GetGraphBotRight().y * grid.GetGraphBotRight().y / clickBR.y));*/
                     }
                     delete firstCorner; // Get rid of the first corner's location since it is no longer relevant (second corner will just go out of scope)
                     firstCorner = NULL; // Cease looking at unallocated memory
@@ -207,6 +217,9 @@ void Runner::Draw() {
 
     /// Draw graph elements
     window->draw(graphs); // Draw the updated graph to the screen
+
+    if(firstCorner != NULL) // Draw the box if we're tracking the first corner
+        window->draw(box);
 
     pic->display(); // Update our graph with the newest points
 

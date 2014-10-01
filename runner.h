@@ -25,7 +25,8 @@ private:
 
     Grid grid;                  // An invisible set of axes used to keep track of our current graph location
 
-    Vector2ld* firstCorner;
+    Vector2ld* firstCorner;     // Pointer to the location of the first click on the graph
+    sf::VertexArray box;        // Represents the gray box drawn between *firstCorner and the current mouse position
 
     std::vector<GUI*> elements;  // An alternate way of accessing each gui element
     const int elementsSize = 2; // Initial size of elements (without any variables)
