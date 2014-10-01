@@ -96,8 +96,8 @@ void Runner::HandleEvents() {
                     } else { // The left control key is pressed, so zoom out
                         // Graph coords of the top-left and bottom-right corners of the box we marked out by clicking
                         Vector2ld clickTL(min(firstCorner->x, secondCorner.x), max(firstCorner->y, secondCorner.y)),
-                                  clickBR(max(firstCorner->x, secondCorner.x), min(firstCorner->y, secondCorner.y));
-                        long double BRx = (grid.GetGraphBotRight().x - grid.GetGraphTopLeft().x) / (clickBR.x - clickTL.x) *
+                                  clickBR(max(firstCorner->x, secondCorner.x), min(firstCorner->y, secondCorner.y));            // Result of hard math.
+                        long double BRx = (grid.GetGraphBotRight().x - grid.GetGraphTopLeft().x) / (clickBR.x - clickTL.x) *    // Take my word for it.
                                           (grid.GetGraphBotRight().x - clickBR.x) + grid.GetGraphBotRight().x,
                                     BRy = (grid.GetGraphBotRight().y - grid.GetGraphTopLeft().y) / (clickBR.y - clickTL.y) *
                                           (grid.GetGraphBotRight().y - clickBR.y) + grid.GetGraphBotRight().y,
@@ -174,8 +174,9 @@ void Runner::ActivateButtons(sf::Event event) {
 }
 
 void Runner::UpdateGraph(Vector2ld topLeft, Vector2ld botRight) {
+    if(topLeft != grid.GetGraphTopLeft() || botRight != grid.GetGraphBotRight()) // If either of the corners is different (i.e. we're zooming)
+        ClearPic(); // Changing the graph entirely, so just clear it first
     grid.SetRangeCorners(topLeft, botRight);
-    std::cout << topLeft.x << ", " << topLeft.y << ", " << botRight.x << ", " << botRight.y << "\n";
     int winSizeX = window->getSize().x,
         winSizeY = window->getSize().y - HEIGHT_OFFSET;
     long double pixelDeltaX = (botRight.x - topLeft.x) / winSizeX, // Distance on the graph between the pixels on the window
@@ -183,8 +184,7 @@ void Runner::UpdateGraph(Vector2ld topLeft, Vector2ld botRight) {
     Vector2ld graphCoords = topLeft;
     for(int iii = 0; iii < winSizeY; iii++) {         // Iterate vertically
         for(int jjj = 0; jjj < winSizeX; jjj++) {     // Iterate horizontally
-            sf::Vertex loc(sf::Vector2f(grid.GraphToPic(Vector2ld(graphCoords.x, graphCoords.y)).x,
-                                        grid.GraphToPic(Vector2ld(graphCoords.x, graphCoords.y)).y),
+            sf::Vertex loc(sf::Vector2f(jjj, iii),
                            Colorgen(Iterate(cx(graphCoords.x, graphCoords.y))));
             pic->draw(&loc, 1, sf::Points);
             graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right

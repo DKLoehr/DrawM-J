@@ -3,7 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 
-typedef sf::Vector2<double> Vector2ld;
+typedef sf::Vector2<long double> Vector2ld;
 
 /**
 * This class represents the graph onto which you might draw functions.
