@@ -88,27 +88,27 @@ void Runner::HandleEvents() {
                 else { // We've already had the first corner selected
                     Vector2ld secondCorner(grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).x, // Graph coordinates of the second corner
                                            grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).y);
+                    Vector2ld clickTL(min(firstCorner->x, secondCorner.x), max(firstCorner->y, secondCorner.y)), // Graph coordinates of the top-left corner
+                              clickBR(max(firstCorner->x, secondCorner.x), min(firstCorner->y, secondCorner.y)); // Graph coords of the bottom-right corner
+                    long double BRx = 0, BRy = 0, TLx = 0, TLy = 0; // Coordinates of the corners of the window after the zoom
                     if(!sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) { // The left control key is not pressed, so zoom in
-                        UpdateGraph(Vector2ld(min(firstCorner->x, secondCorner.x), max(firstCorner->y, secondCorner.y)),  // Redraw our graph such that our
-                                    Vector2ld(max(firstCorner->x, secondCorner.x), min(firstCorner->y, secondCorner.y))); // two points are its corners
-                    Vector2ld clickTL(min(firstCorner->x, secondCorner.x), max(firstCorner->y, secondCorner.y)),
-                              clickBR(max(firstCorner->x, secondCorner.x), min(firstCorner->y, secondCorner.y));
+                        BRx = clickBR.x; // Our corners are just the places we clicked
+                        BRy = clickBR.y;
+                        TLx = clickTL.x;
+                        TLy = clickTL.y;
                     } else { // The left control key is pressed, so zoom out
-                        // Graph coords of the top-left and bottom-right corners of the box we marked out by clicking
-                        Vector2ld clickTL(min(firstCorner->x, secondCorner.x), max(firstCorner->y, secondCorner.y)),
-                                  clickBR(max(firstCorner->x, secondCorner.x), min(firstCorner->y, secondCorner.y));            // Result of hard math.
-                        long double BRx = (grid.GetGraphBotRight().x - grid.GetGraphTopLeft().x) / (clickBR.x - clickTL.x) *    // Take my word for it.
-                                          (grid.GetGraphBotRight().x - clickBR.x) + grid.GetGraphBotRight().x,
-                                    BRy = (grid.GetGraphBotRight().y - grid.GetGraphTopLeft().y) / (clickBR.y - clickTL.y) *
-                                          (grid.GetGraphBotRight().y - clickBR.y) + grid.GetGraphBotRight().y,
-                                    TLx = BRx - (grid.GetGraphBotRight().x - grid.GetGraphTopLeft().x) *
-                                                (grid.GetGraphBotRight().x - grid.GetGraphTopLeft().x) /
-                                                (clickBR.x - clickTL.x),
-                                    TLy = BRy - (grid.GetGraphBotRight().y - grid.GetGraphTopLeft().y) *
-                                                (grid.GetGraphBotRight().y - grid.GetGraphTopLeft().y) /
-                                                (clickBR.y - clickTL.y);
-                        UpdateGraph(Vector2ld(TLx, TLy), Vector2ld(BRx, BRy));
+                        BRx = (grid.GetGraphBotRight().x - grid.GetGraphTopLeft().x) / (clickBR.x - clickTL.x) *    // Result of hard math.
+                              (grid.GetGraphBotRight().x - clickBR.x) + grid.GetGraphBotRight().x,                  // Take my word for it.
+                        BRy = (grid.GetGraphBotRight().y - grid.GetGraphTopLeft().y) / (clickBR.y - clickTL.y) *
+                              (grid.GetGraphBotRight().y - clickBR.y) + grid.GetGraphBotRight().y,
+                        TLx = BRx - (grid.GetGraphBotRight().x - grid.GetGraphTopLeft().x) *
+                                    (grid.GetGraphBotRight().x - grid.GetGraphTopLeft().x) /
+                                    (clickBR.x - clickTL.x),
+                        TLy = BRy - (grid.GetGraphBotRight().y - grid.GetGraphTopLeft().y) *
+                                    (grid.GetGraphBotRight().y - grid.GetGraphTopLeft().y) /
+                                    (clickBR.y - clickTL.y);
                     }
+                    UpdateGraph(Vector2ld(TLx, TLy), Vector2ld(BRx, BRy));
                     delete firstCorner; // Get rid of the first corner's location since it is no longer relevant (second corner will just go out of scope)
                     firstCorner = NULL; // Cease looking at unallocated memory
                 }
@@ -117,15 +117,13 @@ void Runner::HandleEvents() {
     }
 }
 
-int Runner::Iterate(cx pos) {
+int Runner::Iterate(cx pos, cx startPos) {
     if(abs(pos) > 2)    // If we're starting outside our circle of radius 2, we're already done
         return 0;       // Took 0 iterations to get ourside the circle, so return 0
 
-    cx newPos(0,0); // Start iterating from the origin
-
     for(int iii = 0; iii < numIterations; iii++) {
-        newPos = newPos * newPos + pos;
-        if(abs(newPos) > 2)    // If we've gone outside our circle of radius 2, we're done
+        startPos = startPos * startPos + pos;
+        if(abs(startPos) > 2)    // If we've gone outside our circle of radius 2, we're done
             return iii + 1; // Return the number of iterations it took to get outside the circle
     }
     return numIterations + 1;   // If we didn't return in the for loop, then we're still inside the circle; return number of iterations performed
@@ -204,7 +202,7 @@ void Runner::ClearPic() {
 inline sf::Color Runner::Colorgen(int seed) {
     if(seed > numIterations) // Didn't go out from the circle, so it's in the set as far as we know
         return sf::Color::Black;
-    return HSVtoRGBOp((seed * 10) % 360); // Loop the colors
+    return HSVtoRGBOp((seed * 7) % 360); // Loop the colors
 }
 
 void Runner::Draw() {

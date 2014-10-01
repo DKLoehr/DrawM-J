@@ -36,7 +36,7 @@ private:
 
     void Init(); // Initialize the class
 
-    int Iterate(cx pos); // Iterates the given point; returns the number of iterations at which
+    int Iterate(cx pos, cx startPos = cx(0,0)); // Iterates startPos^2 + pos; returns the number of iterations at which it terminated.
 
     void SetActiveElement(double x, double y);  // Determines what activeBox should be based on the mouse coordinates; x and y are window coords to test
     void StepActiveElement(bool increment);     // Increases activeBox by 1 if true, decreases if false, keeping it in valid bounds
