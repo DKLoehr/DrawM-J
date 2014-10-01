@@ -17,7 +17,8 @@ void Runner::Init() {
     graphs.setTexture(pic->getTexture());
 
     grid = Grid(window, sf::Vector2i(0, HEIGHT_OFFSET), (sf::Vector2i)window->getSize(),
-                Vector2ld(-2.1, .8), Vector2ld(-1.25, 1.25));
+                Vector2ld(-2.05, .75), Vector2ld(-1.15, 1.15));
+    std::cout << Vector2ld(-2.05, .75).x << ", " << Vector2ld(-2.05, .75).y << "\n";
 
     firstCorner = NULL;
 
@@ -69,15 +70,41 @@ void Runner::HandleEvents() {
                 ActivateButtons(event);
             } else { // In one of the graphs
                 if(firstCorner == NULL) // Aren't currently selecting a rectangle
-                    firstCorner = new Vector2ld(grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).x,
+                    firstCorner = new Vector2ld(grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).x, // Graph coordinates of the first corner
                                                 grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).y);
-                else {
-                    Vector2ld secondCorner = Vector2ld(grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).x,
-                                                       grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).y);
-                    UpdateGraph(Vector2ld(min(firstCorner->x, secondCorner.x), max(firstCorner->y, secondCorner.y)),
-                                Vector2ld(max(firstCorner->x, secondCorner.x), min(firstCorner->y, secondCorner.y)));
-                    delete firstCorner;
-                    firstCorner = NULL;
+                else { // We've already had the first corner selected
+                    std::cout << event.mouseButton.x << ", " << event.mouseButton.y << "\n";
+                    Vector2ld secondCorner(grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).x, // Graph coordinates of the second corner
+                                           grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).y);
+                    std::cout << firstCorner->x << ", " << firstCorner->y << ", " << secondCorner.x << ", " << secondCorner.y << "\n";
+                    if(!sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) { // The left control key is not pressed, so zoom in
+                        UpdateGraph(Vector2ld(min(firstCorner->x, secondCorner.x), max(firstCorner->y, secondCorner.y)),  // Redraw our graph such that our
+                                    Vector2ld(max(firstCorner->x, secondCorner.x), min(firstCorner->y, secondCorner.y))); // two points are its corners
+                    Vector2ld clickTL(min(firstCorner->x, secondCorner.x), max(firstCorner->y, secondCorner.y)),
+                              clickBR(max(firstCorner->x, secondCorner.x), min(firstCorner->y, secondCorner.y));
+                    //std::cout << clickTL.x << ", " << clickTL.y << ", " << clickBR.x << ", " << clickBR.y << "\n";
+
+                    } else { // The left control key is pressed, so zoom out
+                        // Graph coords of the top-left and bottom-right corners of the box we marked out by clicking
+                        Vector2ld clickTL(min(firstCorner->x, secondCorner.x), max(firstCorner->y, secondCorner.y)),
+                                  clickBR(max(firstCorner->x, secondCorner.x), min(firstCorner->y, secondCorner.y));
+                        long double BRx = (grid.GetGraphBotRight().x - clickBR.x) * (clickBR.x - clickTL.x) /
+                                          (grid.GetGraphBotRight().x - grid.GetGraphTopLeft().x) + grid.GetGraphBotRight().x,
+                                    BRy = (grid.GetGraphBotRight().y - clickBR.y) * (clickBR.y - clickTL.y) /
+                                          (grid.GetGraphBotRight().y - grid.GetGraphTopLeft().y) + grid.GetGraphBotRight().y,
+                                    TLx = BRx - (clickBR.x - clickTL.x) * (clickBR.x - clickTL.x) /
+                                          (grid.GetGraphBotRight().x - grid.GetGraphTopLeft().x),
+                                    TLy = BRy + (clickBR.y - clickTL.y) * (clickBR.y - clickTL.y) /
+                                          (grid.GetGraphBotRight().y - grid.GetGraphTopLeft().y);
+                        //std::cout << clickTL.x << ", " << clickTL.y << ", " << clickBR.x << ", " << clickBR.y << "\n";
+                        UpdateGraph(Vector2ld(TLx, TLy), Vector2ld(BRx, BRy));
+                        /*UpdateGraph(Vector2ld(grid.GetGraphTopLeft().x * grid.GetGraphTopLeft().x / clickTL.x,
+                                              grid.GetGraphTopLeft().y * grid.GetGraphTopLeft().y / clickTL.y),
+                                    Vector2ld(grid.GetGraphBotRight().x * grid.GetGraphBotRight().x / clickBR.x,
+                                              grid.GetGraphBotRight().y * grid.GetGraphBotRight().y / clickBR.y));*/
+                    }
+                    delete firstCorner; // Get rid of the first corner's location since it is no longer relevant (second corner will just go out of scope)
+                    firstCorner = NULL; // Cease looking at unallocated memory
                 }
             }
         }
@@ -142,6 +169,7 @@ void Runner::ActivateButtons(sf::Event event) {
 
 void Runner::UpdateGraph(Vector2ld topLeft, Vector2ld botRight) {
     grid.SetRangeCorners(topLeft, botRight);
+    std::cout << topLeft.x << ", " << topLeft.y << ", " << botRight.x << ", " << botRight.y << "\n";
     int winSizeX = window->getSize().x,
         winSizeY = window->getSize().y - HEIGHT_OFFSET;
     long double pixelDeltaX = (botRight.x - topLeft.x) / winSizeX, // Distance on the graph between the pixels on the window
@@ -149,7 +177,8 @@ void Runner::UpdateGraph(Vector2ld topLeft, Vector2ld botRight) {
     Vector2ld graphCoords = topLeft;
     for(int iii = 0; iii < winSizeY; iii++) {         // Iterate vertically
         for(int jjj = 0; jjj < winSizeX; jjj++) {     // Iterate horizontally
-            sf::Vertex loc(grid.GraphToPic(sf::Vector2f(graphCoords.x, graphCoords.y)),
+            sf::Vertex loc(sf::Vector2f(grid.GraphToPic(Vector2ld(graphCoords.x, graphCoords.y)).x,
+                                        grid.GraphToPic(Vector2ld(graphCoords.x, graphCoords.y)).y),
                            Colorgen(Iterate(cx(graphCoords.x, graphCoords.y))));
             pic->draw(&loc, 1, sf::Points);
             graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right

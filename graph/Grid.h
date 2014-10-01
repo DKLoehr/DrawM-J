@@ -3,7 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 
-typedef sf::Vector2<long double> Vector2ld;
+typedef sf::Vector2<double> Vector2ld;
 
 /**
 * This class represents the graph onto which you might draw functions.
@@ -60,14 +60,14 @@ public:
     /** Functions for converting from graph coordinates to window coordinates and vice-versa **/
 
     /// Given the location on the window, returns the coordinates of the point on the graph
-    sf::Vector2f WindowToGraph(sf::Vector2f wLoc);
-    sf::Vector2f WindowToGraph(double xPos, double yPos);
+    Vector2ld WindowToGraph(Vector2ld wLoc);
+    Vector2ld WindowToGraph(double xPos, double yPos);
     /// Given the location on the graph, returns the coordinates of the pixel on the window
-    sf::Vector2f GraphToWindow(sf::Vector2f gLoc);
-    sf::Vector2f GraphToWindow(double xPos, double yPos);
+    Vector2ld GraphToWindow(Vector2ld gLoc);
+    Vector2ld GraphToWindow(double xPos, double yPos);
     /// Given the location on the graph, returns the coordinates of the pixel on the canvas
-    sf::Vector2f GraphToPic(sf::Vector2f gLoc);
-    sf::Vector2f GraphToPic(double xPos, double yPos);
+    Vector2ld GraphToPic(Vector2ld gLoc);
+    Vector2ld GraphToPic(double xPos, double yPos);
 
 
     /** Functions for getting information from the grid **/

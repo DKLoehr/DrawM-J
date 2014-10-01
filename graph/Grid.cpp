@@ -38,7 +38,7 @@ void Grid::SetRangeCorners(Vector2ld topLeft, Vector2ld botRight) {
              Vector2ld(botRight.y, topLeft.y));
 }
 
-sf::Vector2f Grid::WindowToGraph(sf::Vector2f wLoc) {
+Vector2ld Grid::WindowToGraph(Vector2ld wLoc) {
     double x = wLoc.x, y = wLoc.y;
     if(x < m_position.x) x = m_position.x;
     if(x > m_position.x + m_size.x) x = m_position.x + m_size.x;
@@ -50,14 +50,14 @@ sf::Vector2f Grid::WindowToGraph(sf::Vector2f wLoc) {
     y /= m_size.y / 2 / (m_center.y - m_yRange.x);
     x += m_center.x;
     y += m_center.y;
-    return sf::Vector2f(x, y);
+    return Vector2ld(x, y);
 }
 
-sf::Vector2f Grid::WindowToGraph(double xPos, double yPos) {
-    return WindowToGraph(sf::Vector2f(xPos, yPos));
+Vector2ld Grid::WindowToGraph(double xPos, double yPos) {
+    return WindowToGraph(Vector2ld(xPos, yPos));
 }
 
-sf::Vector2f Grid::GraphToWindow(sf::Vector2f gLoc) {
+Vector2ld Grid::GraphToWindow(Vector2ld gLoc) {
     double x = gLoc.x - m_center.x;
     double y = gLoc.y - m_center.y;
     x *= m_size.x / 2 / (m_center.x - m_xRange.x);
@@ -69,23 +69,23 @@ sf::Vector2f Grid::GraphToWindow(sf::Vector2f gLoc) {
     if(x > m_position.x + m_size.x) x = m_position.x + m_size.x;
     if(y < m_position.y) y = m_position.y;
     if(y > m_position.y + m_size.y) x = m_position.y + m_size.y;
-    return sf::Vector2f(x, y);
+    return Vector2ld(x, y);
 }
 
-sf::Vector2f Grid::GraphToWindow(double xPos, double yPos) {
-    return GraphToWindow(sf::Vector2f(xPos, yPos));
+Vector2ld Grid::GraphToWindow(double xPos, double yPos) {
+    return GraphToWindow(Vector2ld(xPos, yPos));
 }
 
-sf::Vector2f Grid::GraphToPic(sf::Vector2f gLoc) {
-    /*sf::Vector2f coords = GraphToWindow(gLoc);
-    coords -= sf::Vector2f(0, m_origWin.y); // subtract original window size
+Vector2ld Grid::GraphToPic(Vector2ld gLoc) {
+    /*Vector2ld coords = GraphToWindow(gLoc);
+    coords -= Vector2ld(0, m_origWin.y); // subtract original window size
     coords.y *= -1;
     return coords;*/
-    return GraphToWindow(gLoc) - sf::Vector2f(0, m_position.y);
+    return GraphToWindow(gLoc) - Vector2ld(0, m_position.y);
 }
 
-sf::Vector2f Grid::GraphToPic(double xPos, double yPos) {
-    return GraphToPic(sf::Vector2f(xPos, yPos));
+Vector2ld Grid::GraphToPic(double xPos, double yPos) {
+    return GraphToPic(Vector2ld(xPos, yPos));
 }
 
 Vector2ld Grid::GetGraphTopLeft() {
