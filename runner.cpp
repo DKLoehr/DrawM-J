@@ -18,7 +18,6 @@ void Runner::Init() {
 
     grid = Grid(window, sf::Vector2i(0, HEIGHT_OFFSET), (sf::Vector2i)window->getSize(),
                 Vector2ld(-2.05, .75), Vector2ld(-1.15, 1.15));
-    std::cout << Vector2ld(-2.05, .75).x << ", " << Vector2ld(-2.05, .75).y << "\n";
 
     firstCorner = NULL;
 
@@ -73,30 +72,27 @@ void Runner::HandleEvents() {
                     firstCorner = new Vector2ld(grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).x, // Graph coordinates of the first corner
                                                 grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).y);
                 else { // We've already had the first corner selected
-                    std::cout << event.mouseButton.x << ", " << event.mouseButton.y << "\n";
                     Vector2ld secondCorner(grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).x, // Graph coordinates of the second corner
                                            grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).y);
-                    std::cout << firstCorner->x << ", " << firstCorner->y << ", " << secondCorner.x << ", " << secondCorner.y << "\n";
                     if(!sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) { // The left control key is not pressed, so zoom in
                         UpdateGraph(Vector2ld(min(firstCorner->x, secondCorner.x), max(firstCorner->y, secondCorner.y)),  // Redraw our graph such that our
                                     Vector2ld(max(firstCorner->x, secondCorner.x), min(firstCorner->y, secondCorner.y))); // two points are its corners
                     Vector2ld clickTL(min(firstCorner->x, secondCorner.x), max(firstCorner->y, secondCorner.y)),
                               clickBR(max(firstCorner->x, secondCorner.x), min(firstCorner->y, secondCorner.y));
-                    //std::cout << clickTL.x << ", " << clickTL.y << ", " << clickBR.x << ", " << clickBR.y << "\n";
-
                     } else { // The left control key is pressed, so zoom out
                         // Graph coords of the top-left and bottom-right corners of the box we marked out by clicking
                         Vector2ld clickTL(min(firstCorner->x, secondCorner.x), max(firstCorner->y, secondCorner.y)),
                                   clickBR(max(firstCorner->x, secondCorner.x), min(firstCorner->y, secondCorner.y));
-                        long double BRx = (grid.GetGraphBotRight().x - clickBR.x) * (clickBR.x - clickTL.x) /
-                                          (grid.GetGraphBotRight().x - grid.GetGraphTopLeft().x) + grid.GetGraphBotRight().x,
-                                    BRy = (grid.GetGraphBotRight().y - clickBR.y) * (clickBR.y - clickTL.y) /
-                                          (grid.GetGraphBotRight().y - grid.GetGraphTopLeft().y) + grid.GetGraphBotRight().y,
-                                    TLx = BRx - (clickBR.x - clickTL.x) * (clickBR.x - clickTL.x) /
-                                          (grid.GetGraphBotRight().x - grid.GetGraphTopLeft().x),
-                                    TLy = BRy + (clickBR.y - clickTL.y) * (clickBR.y - clickTL.y) /
-                                          (grid.GetGraphBotRight().y - grid.GetGraphTopLeft().y);
-                        //std::cout << clickTL.x << ", " << clickTL.y << ", " << clickBR.x << ", " << clickBR.y << "\n";
+                        long double BRx = (grid.GetGraphBotRight().x - grid.GetGraphTopLeft().x) / (clickBR.x - clickTL.x) *
+                                          (grid.GetGraphBotRight().x - clickBR.x) + grid.GetGraphBotRight().x,
+                                    BRy = (grid.GetGraphBotRight().y - grid.GetGraphTopLeft().y) / (clickBR.y - clickTL.y) *
+                                          (grid.GetGraphBotRight().y - clickBR.y) + grid.GetGraphBotRight().y,
+                                    TLx = BRx - (grid.GetGraphBotRight().x - grid.GetGraphTopLeft().x) *
+                                                (grid.GetGraphBotRight().x - grid.GetGraphTopLeft().x) /
+                                                (clickBR.x - clickTL.x),
+                                    TLy = BRy - (grid.GetGraphBotRight().y - grid.GetGraphTopLeft().y) *
+                                                (grid.GetGraphBotRight().y - grid.GetGraphTopLeft().y) /
+                                                (clickBR.y - clickTL.y);
                         UpdateGraph(Vector2ld(TLx, TLy), Vector2ld(BRx, BRy));
                         /*UpdateGraph(Vector2ld(grid.GetGraphTopLeft().x * grid.GetGraphTopLeft().x / clickTL.x,
                                               grid.GetGraphTopLeft().y * grid.GetGraphTopLeft().y / clickTL.y),
