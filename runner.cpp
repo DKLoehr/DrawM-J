@@ -1,4 +1,5 @@
 #include "runner.h"
+#include <time.h>
 
 Runner::Runner(sf::RenderWindow* w, sf::Font* font, sf::RenderTexture* p) :
     window(w),
@@ -97,16 +98,13 @@ void Runner::HandleEvents() {
                         TLx = clickTL.x;
                         TLy = clickTL.y;
                     } else { // The left control key is pressed, so zoom out
-                        BRx = (grid.GetGraphBotRight().x - grid.GetGraphTopLeft().x) / (clickBR.x - clickTL.x) *    // Result of hard math.
-                              (grid.GetGraphBotRight().x - clickBR.x) + grid.GetGraphBotRight().x,                  // Take my word for it.
-                        BRy = (grid.GetGraphBotRight().y - grid.GetGraphTopLeft().y) / (clickBR.y - clickTL.y) *
-                              (grid.GetGraphBotRight().y - clickBR.y) + grid.GetGraphBotRight().y,
-                        TLx = BRx - (grid.GetGraphBotRight().x - grid.GetGraphTopLeft().x) *
-                                    (grid.GetGraphBotRight().x - grid.GetGraphTopLeft().x) /
-                                    (clickBR.x - clickTL.x),
-                        TLy = BRy - (grid.GetGraphBotRight().y - grid.GetGraphTopLeft().y) *
-                                    (grid.GetGraphBotRight().y - grid.GetGraphTopLeft().y) /
-                                    (clickBR.y - clickTL.y);
+                        Vector2ld currentBR = grid.GetGraphBotRight(),
+                                  currentTL = grid.GetGraphTopLeft();
+                        // Result of hard math. Take my word for it.
+                        BRx = (currentBR.x - currentTL.x) / (clickBR.x - clickTL.x) * (currentBR.x - clickBR.x) + currentBR.x,
+                        BRy = (currentBR.y - currentTL.y) / (clickBR.y - clickTL.y) * (currentBR.y - clickBR.y) + currentBR.y,
+                        TLx = BRx - (currentBR.x - currentTL.x) * (currentBR.x - currentTL.x) / (clickBR.x - clickTL.x),
+                        TLy = BRy - (currentBR.y - currentTL.y) * (currentBR.y - currentTL.y) / (clickBR.y - clickTL.y);
                     }
                     UpdateGraph(Vector2ld(TLx, TLy), Vector2ld(BRx, BRy));
                     delete firstCorner; // Get rid of the first corner's location since it is no longer relevant (second corner will just go out of scope)
@@ -121,9 +119,15 @@ int Runner::Iterate(cx pos, cx startPos) {
     if(abs(pos) > 2)    // If we're starting outside our circle of radius 2, we're already done
         return 0;       // Took 0 iterations to get ourside the circle, so return 0
 
+    long double a = startPos.real(), b = startPos.imag(), c = pos.real(), d = pos.imag(), k1 = 0, k2 = 0;
     for(int iii = 0; iii < numIterations; iii++) {
-        startPos = startPos * startPos + pos;
-        if(abs(startPos) > 2)    // If we've gone outside our circle of radius 2, we're done
+        //startPos = startPos * startPos + pos;/*
+        k1 = a*a;
+        k2 = b*b;
+
+        b = (a+b) * (a+b)-k1-k2 + d; // b uses a, but a doesn't use b, so calculate b first
+        a = k1 - k2 + c;
+        if(a*a + b*b > 4)    // If we've gone outside our circle of radius 2, we're done
             return iii + 1; // Return the number of iterations it took to get outside the circle
     }
     return numIterations + 1;   // If we didn't return in the for loop, then we're still inside the circle; return number of iterations performed
@@ -172,6 +176,9 @@ void Runner::ActivateButtons(sf::Event event) {
 }
 
 void Runner::UpdateGraph(Vector2ld topLeft, Vector2ld botRight) {
+    std::clock_t start;
+    start = std::clock();
+
     if(topLeft != grid.GetGraphTopLeft() || botRight != grid.GetGraphBotRight()) // If either of the corners is different (i.e. we're zooming)
         ClearPic(); // Changing the graph entirely, so just clear it first
     grid.SetRangeCorners(topLeft, botRight);
@@ -189,10 +196,12 @@ void Runner::UpdateGraph(Vector2ld topLeft, Vector2ld botRight) {
         }
         graphCoords.x = topLeft.x;                      // Reset x coordinate
         graphCoords.y = graphCoords.y - pixelDeltaY;    // Move one pixel down
-        window->draw(graphs); // Draw the updated graph to the screen after each line of pixels
-        pic->display(); // Update our graph with the newest points
+        window->draw(graphs); // Draw the updated graph to the screen after each horizontal line of pixels
+        pic->display();       // Update our graph with the newest points
         window->display();
     }
+    double duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+    std::cout << duration << "\n";
 }
 
 void Runner::ClearPic() {
