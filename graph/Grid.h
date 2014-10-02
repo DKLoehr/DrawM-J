@@ -74,6 +74,9 @@ public:
     /// Returns the graph locations of the top right and bottom left corners of the graph, respectively
     Vector2ld GetGraphTopLeft();
     Vector2ld GetGraphBotRight();
+    /// As above, but returns a pointer to the Vector instead
+    Vector2ld* GetGraphTopLeftP();
+    Vector2ld* GetGraphBotRightP();
 };
 
 #endif // GRID_H

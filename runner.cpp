@@ -106,7 +106,11 @@ void Runner::HandleEvents() {
                         TLx = BRx - (currentBR.x - currentTL.x) * (currentBR.x - currentTL.x) / (clickBR.x - clickTL.x),
                         TLy = BRy - (currentBR.y - currentTL.y) * (currentBR.y - currentTL.y) / (clickBR.y - clickTL.y);
                     }
-                    UpdateGraph(Vector2ld(TLx, TLy), Vector2ld(BRx, BRy));
+                    Vector2ld* newTL = new Vector2ld(TLx, TLy);
+                    Vector2ld* newBR = new Vector2ld(BRx, BRy);
+                    UpdateGraph(newTL, newBR);
+                    delete newTL;
+                    delete newBR;
                     delete firstCorner; // Get rid of the first corner's location since it is no longer relevant (second corner will just go out of scope)
                     firstCorner = NULL; // Cease looking at unallocated memory
                 }
@@ -115,19 +119,25 @@ void Runner::HandleEvents() {
     }
 }
 
-int Runner::Iterate(cx pos, cx startPos) {
-    if(abs(pos) > 2)    // If we're starting outside our circle of radius 2, we're already done
+int Runner::Iterate(cx* pos, cx* startPos) {
+    if(abs(*pos) > 2)    // If we're starting outside our circle of radius 2, we're already done
         return 0;       // Took 0 iterations to get ourside the circle, so return 0
 
-    long double a = startPos.real(), b = startPos.imag(), c = pos.real(), d = pos.imag(), k1 = 0, k2 = 0;
-    for(int iii = 0; iii < numIterations; iii++) {
-        //startPos = startPos * startPos + pos;/*
+    if(startPos == NULL)
+        startPos = new cx(0,0);
+
+    long double a = startPos->real(), b = startPos->imag(), c = pos->real(), d = pos->imag(), k1 = a*a, k2 = b*b;
+
+    delete startPos; // We've gotten what we needed from pos and startPos, so get rid of them to avoid memory leaks
+    delete pos;
+    for(unsigned int iii = 0; iii < numIterations; iii++) {
+        //*startPos = *startPos * *startPos + *pos; // This is equivalent to the below code, but a lot slower
+        b = (a + b) * (a + b) - k1 - k2 + d; // b uses a, but a doesn't use b, so calculate b first
+        a = k1 - k2 + c;
+
         k1 = a*a;
         k2 = b*b;
-
-        b = (a+b) * (a+b)-k1-k2 + d; // b uses a, but a doesn't use b, so calculate b first
-        a = k1 - k2 + c;
-        if(a*a + b*b > 4)    // If we've gone outside our circle of radius 2, we're done
+        if(k1 + k2 > 4)    // If we've gone outside our circle of radius 2, we're done
             return iii + 1; // Return the number of iterations it took to get outside the circle
     }
     return numIterations + 1;   // If we didn't return in the for loop, then we're still inside the circle; return number of iterations performed
@@ -159,7 +169,7 @@ void Runner::StepActiveElement(bool increment) {
 
 void Runner::UpdateIterations() {
     numIterations = ToInt((std::string)iterations.GetText()); // Set numIterations to the number specified in the box
-    UpdateGraph(grid.GetGraphTopLeft(), grid.GetGraphBotRight());
+    UpdateGraph(grid.GetGraphTopLeftP(), grid.GetGraphBotRightP());
 }
 
 void Runner::ActivateButtons(sf::Event event) {
@@ -175,26 +185,26 @@ void Runner::ActivateButtons(sf::Event event) {
     }
 }
 
-void Runner::UpdateGraph(Vector2ld topLeft, Vector2ld botRight) {
+void Runner::UpdateGraph(Vector2ld* topLeft, Vector2ld* botRight) {
     std::clock_t start;
     start = std::clock();
 
-    if(topLeft != grid.GetGraphTopLeft() || botRight != grid.GetGraphBotRight()) // If either of the corners is different (i.e. we're zooming)
+    if(*topLeft != grid.GetGraphTopLeft() || *botRight != grid.GetGraphBotRight()) // If either of the corners has changes position (i.e. we're zooming)
         ClearPic(); // Changing the graph entirely, so just clear it first
-    grid.SetRangeCorners(topLeft, botRight);
-    int winSizeX = window->getSize().x,
-        winSizeY = window->getSize().y - HEIGHT_OFFSET;
-    long double pixelDeltaX = (botRight.x - topLeft.x) / winSizeX, // Distance on the graph between the pixels on the window
-                pixelDeltaY = (topLeft.y - botRight.y) / winSizeY;
-    Vector2ld graphCoords = topLeft;
-    for(int iii = 0; iii < winSizeY; iii++) {         // Iterate vertically
-        for(int jjj = 0; jjj < winSizeX; jjj++) {     // Iterate horizontally
+    grid.SetRangeCorners(*topLeft, *botRight);
+    unsigned int winSizeX = window->getSize().x,
+                 winSizeY = window->getSize().y - HEIGHT_OFFSET;
+    long double pixelDeltaX = (botRight->x - topLeft->x) / winSizeX, // Distance on the graph between the pixels on the window
+                pixelDeltaY = (topLeft->y - botRight->y) / winSizeY;
+    Vector2ld graphCoords = *topLeft;
+    for(unsigned int iii = 0; iii < winSizeY; iii++) {         // Iterate vertically
+        for(unsigned int jjj = 0; jjj < winSizeX; jjj++) {     // Iterate horizontally
             sf::Vertex loc(sf::Vector2f(jjj, iii),
-                           Colorgen(Iterate(cx(graphCoords.x, graphCoords.y))));
+                           Colorgen(Iterate(new cx(graphCoords.x, graphCoords.y))));
             pic->draw(&loc, 1, sf::Points);
             graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
         }
-        graphCoords.x = topLeft.x;                      // Reset x coordinate
+        graphCoords.x = topLeft->x;                      // Reset x coordinate
         graphCoords.y = graphCoords.y - pixelDeltaY;    // Move one pixel down
         window->draw(graphs); // Draw the updated graph to the screen after each horizontal line of pixels
         pic->display();       // Update our graph with the newest points

@@ -14,7 +14,7 @@ class Runner
 {
 private:
     int activeBox;
-    int numIterations;
+    unsigned int numIterations;
 
     sf::RenderWindow* window;   // The window to which we draw
     sf::Font* inFont;           // The font to use for all text (VeraMono)
@@ -36,12 +36,13 @@ private:
 
     void Init(); // Initialize the class
 
-    int Iterate(cx pos, cx startPos = cx(0,0)); // Iterates startPos^2 + pos; returns the number of iterations at which it terminated.
+    int Iterate(cx* pos, cx* startPos = NULL);  // Iterates startPos^2 + pos; returns the number of iterations at which it terminated.
+                                                // Warning: calls delete on startPos and pos, so pass in a copy of anything you want to keep.
 
     void SetActiveElement(double x, double y);  // Determines what activeBox should be based on the mouse coordinates; x and y are window coords to test
     void StepActiveElement(bool increment);     // Increases activeBox by 1 if true, decreases if false, keeping it in valid bounds
     void UpdateIterations();                    // Update numIterations according to what's in the box
-    void UpdateGraph(Vector2ld topLeft, Vector2ld botRight); // Update the graph given the positions of the top left and bottom right corner
+    void UpdateGraph(Vector2ld* topLeft, Vector2ld* botRight); // Update the graph given the positions of the top left and bottom right corner
     void ActivateButtons(sf::Event event);      // Activate buttons depending on activeBox and/or the event; event is the event that activated a button
 
     void ClearPic(); // Clear all points drawn to pic

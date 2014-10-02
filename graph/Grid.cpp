@@ -95,3 +95,11 @@ Vector2ld Grid::GetGraphTopLeft() {
 Vector2ld Grid::GetGraphBotRight() {
     return Vector2ld(m_xRange.y, m_yRange.x);
 }
+
+Vector2ld* Grid::GetGraphTopLeftP() {
+    return new Vector2ld(m_xRange.x, m_yRange.y);
+}
+
+Vector2ld* Grid::GetGraphBotRightP() {
+    return new Vector2ld(m_xRange.y, m_yRange.x);
+}
