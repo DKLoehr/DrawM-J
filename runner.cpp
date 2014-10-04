@@ -247,23 +247,17 @@ void Runner::UpdateGraph(Vector2ld* topLeft, Vector2ld* botRight) {
                 pixelDeltaY = (topLeft->y - botRight->y) / winSizeY;
     Vector2ld graphCoords = *topLeft;
     unsigned int xLoc = 0, yLoc = 0;
-    sf::Color c;
     for(unsigned int iii = winSizeY; iii != 0; iii--) {         // Iterate vertically
         for(unsigned int jjj = winSizeX; jjj != 0 ; jjj--) {     // Iterate horizontally
-            if(!zooming) {
-                if(inSet[xLoc][yLoc] && !moreIters ||
-                   !inSet[xLoc][yLoc] && moreIters) {
-                    c = sf::Color::Transparent;
-                } else {
-                    c = Colorgen(Iterate(new cx(graphCoords.x, graphCoords.y)));
-                    inSet[xLoc][yLoc] = c == sf::Color::Black;
-                }
-            } else {
-                c = Colorgen(Iterate(new cx(graphCoords.x, graphCoords.y)));
-                inSet[xLoc][yLoc] = c == sf::Color::Black;
+            if(!zooming && (inSet[xLoc][yLoc] && !moreIters ||  // Not zooming, and we know that this pixel remains unchanges
+                            !inSet[xLoc][yLoc] && moreIters)) {
+                graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
+                xLoc = xLoc + 1;
+                continue; // No need to draw a new pixel, since this one will remain the same. Next iteration
             }
             sf::Vertex loc(sf::Vector2f(xLoc, yLoc),
-                           c);
+                           Colorgen(Iterate(new cx(graphCoords.x, graphCoords.y))));
+            inSet[xLoc][yLoc] = (loc.color == sf::Color::Black);
             pic->draw(&loc, 1, sf::Points);
             graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
             xLoc = xLoc + 1;
