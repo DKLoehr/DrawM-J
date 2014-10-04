@@ -16,10 +16,13 @@ private:
     int activeBox;
     unsigned int numIterations;
 
-    sf::RenderWindow* window;   // The window to which we draw
+    sf::RenderWindow* window;   // The window to which we draw the M-set
+    sf::RenderWindow* jWindow;  // The window to which we draw J-sets
     sf::Font* inFont;           // The font to use for all text (VeraMono)
     sf::RenderTexture* pic;     // The canvas to which we draw graphed points
+    sf::RenderTexture* jPic;    // As with pic, but for the J-set window
     sf::Sprite graphs;          // The sprite which we use to draw pic to the screen
+    sf::Sprite jGraphs;         // As with graphs, but for the J-set window
 
     parser::Tree* fct;          // The tree we use to evaluate our expression
 
@@ -43,6 +46,7 @@ private:
     void StepActiveElement(bool increment);     // Increases activeBox by 1 if true, decreases if false, keeping it in valid bounds
     void UpdateIterations();                    // Update numIterations according to what's in the box
     void UpdateGraph(Vector2ld* topLeft, Vector2ld* botRight); // Update the graph given the positions of the top left and bottom right corner
+    void UpdateJulia(cx pos);
     void ActivateButtons(sf::Event event);      // Activate buttons depending on activeBox and/or the event; event is the event that activated a button
 
     void ClearPic(); // Clear all points drawn to pic
@@ -55,7 +59,7 @@ private:
     sf::Color HSVtoRGBOp(int hue); // Optimized version of HSVto RGB for our purposes
 
 public:
-    Runner(sf::RenderWindow* w, sf::Font* font, sf::RenderTexture* p); // Constructor
+    Runner(sf::RenderWindow* w, sf::RenderWindow* j, sf::Font* font, sf::RenderTexture* p, sf::RenderTexture* jP); // Constructor
 
     void HandleEvents();    // Perform all the tasks necessary to run
 

@@ -1,10 +1,12 @@
 #include "runner.h"
 #include <time.h>
 
-Runner::Runner(sf::RenderWindow* w, sf::Font* font, sf::RenderTexture* p) :
+Runner::Runner(sf::RenderWindow* w, sf::RenderWindow* j, sf::Font* font, sf::RenderTexture* p, sf::RenderTexture* jP) :
     window(w),
+    jWindow(j),
     inFont(font),
-    pic(p)
+    pic(p),
+    jPic(jP)
 {
     Init();
 }
@@ -16,6 +18,10 @@ void Runner::Init() {
     pic->clear(sf::Color::White);
     graphs.setPosition(0, HEIGHT_OFFSET);
     graphs.setTexture(pic->getTexture());
+
+    jPic->clear(sf::Color::White);
+    jGraphs.setPosition(0, 0);
+    jGraphs.setTexture(jPic->getTexture());
 
     grid = Grid(window, sf::Vector2i(0, HEIGHT_OFFSET), (sf::Vector2i)window->getSize(),
                 Vector2ld(-2.05, .75), Vector2ld(-1.15, 1.15));
@@ -52,6 +58,7 @@ void Runner::Init() {
 
 void Runner::HandleEvents() {
     sf::Event event;
+    while(jWindow->pollEvent(event)); // For internal handling of events
     while(window->pollEvent(event)) {
         if(event.type == sf::Event::Closed ||
            (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape))
@@ -76,7 +83,7 @@ void Runner::HandleEvents() {
         } else if(event.type == sf::Event::MouseButtonPressed) {
             if(event.mouseButton.y < HEIGHT_OFFSET) { // Above the graphs
                 ActivateButtons(event);
-            } else { // In one of the graphs
+            } else if(!sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) { // In one of the graphs, not Julia Set
                 if(firstCorner == NULL) {   // Aren't currently selecting a rectangle
                     firstCorner = new Vector2ld(grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).x, // Graph coordinates of the first corner
                                                 grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).y);
@@ -114,6 +121,9 @@ void Runner::HandleEvents() {
                     delete firstCorner; // Get rid of the first corner's location since it is no longer relevant (second corner will just go out of scope)
                     firstCorner = NULL; // Cease looking at unallocated memory
                 }
+            } else { // In graph, Julia set
+                Vector2ld graphCoords(grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y));
+                UpdateJulia(cx(graphCoords.x, graphCoords.y));
             }
         }
     }
@@ -219,6 +229,33 @@ void Runner::UpdateGraph(Vector2ld* topLeft, Vector2ld* botRight) {
     std::cout << duration << "\n";
 }
 
+void Runner::UpdateJulia(cx pos) {
+    unsigned int winSizeX = jWindow->getSize().x,
+                 winSizeY = jWindow->getSize().y;
+    long double pixelDeltaX = 4.0 / winSizeX, // Distance on the graph between the pixels on the window
+                pixelDeltaY = 4.0 / winSizeY;
+    Vector2ld graphCoords = Vector2ld(-2.0, 2.0);
+    unsigned int xLoc = 0, yLoc = winSizeY;
+    for(unsigned int iii = winSizeY; iii != 0; iii--) {         // Iterate vertically
+        for(unsigned int jjj = winSizeX; jjj != 0 ; jjj--) {     // Iterate horizontally
+            cx *cPos = new cx(0, 0);
+            *cPos = pos;
+            sf::Vertex loc(sf::Vector2f(xLoc, yLoc),
+                           Colorgen(Iterate(cPos, new cx(graphCoords.x, graphCoords.y))));
+            jPic->draw(&loc, 1, sf::Points);
+            graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
+            xLoc = xLoc + 1;
+        }
+        yLoc = yLoc - 1;
+        xLoc = 0;
+        graphCoords.x = -2;                      // Reset x coordinate
+        graphCoords.y = graphCoords.y - pixelDeltaY;    // Move one pixel down
+        jWindow->draw(jGraphs); // Draw the updated graph to the screen after each horizontal line of pixels
+        jPic->display();       // Update our graph with the newest points
+        jWindow->display();
+    }
+}
+
 void Runner::ClearPic() {
     pic->clear(sf::Color::White);   // Clear the canvas (pic) to be fully white
 }
@@ -231,6 +268,7 @@ inline sf::Color Runner::Colorgen(int seed) {
 
 void Runner::Draw() {
     window->clear(sf::Color::White); // Clear in preparation for drawing new stuff
+    jWindow->clear(sf::Color::White);
 
     /// Draw GUI elements
     for(int iii = 0; iii < elements.size(); iii++) { // Draw each GUI element (textboxes, buttons, checkboxes)
@@ -239,13 +277,16 @@ void Runner::Draw() {
 
     /// Draw graph elements
     window->draw(graphs); // Draw the updated graph to the screen
+    jWindow->draw(jGraphs);
 
     if(firstCorner != NULL) // Draw the box if we're tracking the first corner
         window->draw(box);
 
     pic->display(); // Update our graph with the newest points
+    jPic->display();
 
     window->display(); // Display everything we've drawn on the screen
+    jWindow->display();
 }
 
 // Converts a string with a number in it to an integer containing that number
