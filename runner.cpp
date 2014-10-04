@@ -120,25 +120,25 @@ void Runner::HandleEvents() {
 }
 
 int Runner::Iterate(cx* pos, cx* startPos) {
-    if(abs(*pos) > 2)    // If we're starting outside our circle of radius 2, we're already done
+    if(abs(*pos) > 2)   // If we're starting outside our circle of radius 2, we're already done
         return 0;       // Took 0 iterations to get ourside the circle, so return 0
 
     if(startPos == NULL)
         startPos = new cx(0,0);
 
-    long double a = startPos->real(), b = startPos->imag(), c = pos->real(), d = pos->imag(), k1 = a*a, k2 = b*b;
+    long double a = startPos->real(), b = startPos->imag(), c = pos->real(), d = pos->imag(), k1 = a * a, k2 = b * b;
 
     delete startPos; // We've gotten what we needed from pos and startPos, so get rid of them to avoid memory leaks
     delete pos;
-    for(unsigned int iii = 0; iii < numIterations; iii++) {
-        //*startPos = *startPos * *startPos + *pos; // This is equivalent to the below code, but a lot slower
+    for(unsigned int iii = numIterations; iii != 0; iii--) {
+        //startPos = startPos * startPos + pos; // This is equivalent to the below code (except without pointers), but a lot slower
         b = (a + b) * (a + b) - k1 - k2 + d; // b uses a, but a doesn't use b, so calculate b first
         a = k1 - k2 + c;
 
-        k1 = a*a;
-        k2 = b*b;
+        k1 = a * a;
+        k2 = b * b;
         if(k1 + k2 > 4)    // If we've gone outside our circle of radius 2, we're done
-            return iii + 1; // Return the number of iterations it took to get outside the circle
+            return numIterations - iii + 1; // Return the number of iterations it took to get outside the circle
     }
     return numIterations + 1;   // If we didn't return in the for loop, then we're still inside the circle; return number of iterations performed
 }
@@ -197,19 +197,24 @@ void Runner::UpdateGraph(Vector2ld* topLeft, Vector2ld* botRight) {
     long double pixelDeltaX = (botRight->x - topLeft->x) / winSizeX, // Distance on the graph between the pixels on the window
                 pixelDeltaY = (topLeft->y - botRight->y) / winSizeY;
     Vector2ld graphCoords = *topLeft;
-    for(unsigned int iii = 0; iii < winSizeY; iii++) {         // Iterate vertically
-        for(unsigned int jjj = 0; jjj < winSizeX; jjj++) {     // Iterate horizontally
-            sf::Vertex loc(sf::Vector2f(jjj, iii),
+    unsigned int xLoc = 0, yLoc = 0;
+    for(unsigned int iii = winSizeY; iii != 0; iii--) {         // Iterate vertically
+        for(unsigned int jjj = winSizeX; jjj != 0 ; jjj--) {     // Iterate horizontally
+            sf::Vertex loc(sf::Vector2f(xLoc, yLoc),
                            Colorgen(Iterate(new cx(graphCoords.x, graphCoords.y))));
             pic->draw(&loc, 1, sf::Points);
             graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
+            xLoc = xLoc + 1;
         }
+        yLoc = yLoc + 1;
+        xLoc = 0;
         graphCoords.x = topLeft->x;                      // Reset x coordinate
         graphCoords.y = graphCoords.y - pixelDeltaY;    // Move one pixel down
         window->draw(graphs); // Draw the updated graph to the screen after each horizontal line of pixels
         pic->display();       // Update our graph with the newest points
         window->display();
     }
+
     double duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
     std::cout << duration << "\n";
 }
