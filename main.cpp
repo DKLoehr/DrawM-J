@@ -8,7 +8,7 @@ int main() {
     //if(!inFont.loadFromFile(resourcePath() + "VeraMono.ttf")) // For Macs; comment out if on Windows or Linux
     //    return -1;
 
-    sf::RenderWindow window(sf::VideoMode(1000, 750), "Draw M&J Revamped");
+    sf::RenderWindow window(sf::VideoMode(WIN_SIZE_X, WIN_SIZE_Y), "Draw M&J Revamped");
     window.setPosition(sf::Vector2i(0, 0));
 
     sf::RenderWindow jWindow(sf::VideoMode(500, 500), "Julia Set");

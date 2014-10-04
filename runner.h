@@ -9,12 +9,15 @@
 #include "graph/Grid.h"
 
 #define HEIGHT_OFFSET 40        // The number of pixels between the top of the window and the top of the graphs
+#define WIN_SIZE_X 1000
+#define WIN_SIZE_Y 750
 
 class Runner
 {
 private:
     int activeBox;
     unsigned int numIterations;
+    unsigned int prevNumIterations; // The last number of iterations we did
 
     sf::RenderWindow* window;   // The window to which we draw the M-set
     sf::RenderWindow* jWindow;  // The window to which we draw J-sets
@@ -23,6 +26,8 @@ private:
     sf::RenderTexture* jPic;    // As with pic, but for the J-set window
     sf::Sprite graphs;          // The sprite which we use to draw pic to the screen
     sf::Sprite jGraphs;         // As with graphs, but for the J-set window
+
+    bool inSet[WIN_SIZE_X][WIN_SIZE_Y];             // Stores per-pixel if that pixel is in the set (true) or not (false)
 
     parser::Tree* fct;          // The tree we use to evaluate our expression
 
@@ -38,6 +43,7 @@ private:
     InputBox iterations;  // 1
 
     void Init(); // Initialize the class
+    void SetUpGraph();                          // Sets up the graph, inSet, etc. properly for when the program is started
 
     int Iterate(cx* pos, cx* startPos = NULL);  // Iterates startPos^2 + pos; returns the number of iterations at which it terminated.
                                                 // Warning: calls delete on startPos and pos, so pass in a copy of anything you want to keep.

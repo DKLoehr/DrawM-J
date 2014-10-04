@@ -14,6 +14,7 @@ Runner::Runner(sf::RenderWindow* w, sf::RenderWindow* j, sf::Font* font, sf::Ren
 
 void Runner::Init() {
     numIterations = 0;
+    prevNumIterations = 0;
 
     pic->clear(sf::Color::White);
     graphs.setPosition(0, HEIGHT_OFFSET);
@@ -24,7 +25,7 @@ void Runner::Init() {
     jGraphs.setTexture(jPic->getTexture());
 
     grid = Grid(window, sf::Vector2i(0, HEIGHT_OFFSET), (sf::Vector2i)window->getSize(),
-                Vector2ld(-2.05, .75), Vector2ld(-1.15, 1.15));
+                Vector2ld(-2, 1), Vector2ld(-1, 1));
 
     firstCorner = NULL;
     box = sf::VertexArray(sf::LinesStrip, 5);
@@ -54,6 +55,36 @@ void Runner::Init() {
     }
     activeBox = 1; // Start out highlighting the input box
     elements[activeBox]->SetActive(true);
+    SetUpGraph();
+}
+
+
+void Runner::SetUpGraph() {
+    ClearPic();
+    Vector2ld TL(-2.05, 1.15),
+              BR(.75, -1.15);
+    grid.SetRangeCorners(TL, BR);
+    unsigned int winSizeX = window->getSize().x,
+                 winSizeY = window->getSize().y - HEIGHT_OFFSET;
+    long double pixelDeltaX = (BR.x - TL.x) / winSizeX, // Distance on the graph between the pixels on the window
+                pixelDeltaY = (TL.y - BR.y) / winSizeY;
+    Vector2ld graphCoords = TL;
+    unsigned int xLoc = 0, yLoc = 0;
+    for(unsigned int iii = winSizeY; iii != 0; iii--) {         // Iterate vertically
+        for(unsigned int jjj = winSizeX; jjj != 0 ; jjj--) {     // Iterate horizontally
+            sf::Vertex loc(sf::Vector2f(xLoc, yLoc),
+                           Colorgen(Iterate(new cx(graphCoords.x, graphCoords.y))));
+            inSet[xLoc][yLoc] = (loc.color == sf::Color::Black);
+            pic->draw(&loc, 1, sf::Points);
+            graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
+            xLoc = xLoc + 1;
+        }
+        yLoc = yLoc + 1;
+        xLoc = 0;
+        graphCoords.x = TL.x;                      // Reset x coordinate
+        graphCoords.y = graphCoords.y - pixelDeltaY;    // Move one pixel down
+    }
+    prevNumIterations = numIterations;
 }
 
 void Runner::HandleEvents() {
@@ -76,6 +107,10 @@ void Runner::HandleEvents() {
                     box[1].position = sf::Vector2f(event.mouseMove.x, box[0].position.y);
                     box[2].position = sf::Vector2f(event.mouseMove.x, event.mouseMove.y);
                     box[3].position = sf::Vector2f(box[0].position.x, event.mouseMove.y);
+                    if(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
+                        Vector2ld graphCoords(grid.WindowToGraph(event.mouseMove.x, event.mouseMove.y));
+                        UpdateJulia(cx(graphCoords.x, graphCoords.y));
+                    }
             }
         } else if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Tab) {
             StepActiveElement(!(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) ||
@@ -199,8 +234,12 @@ void Runner::UpdateGraph(Vector2ld* topLeft, Vector2ld* botRight) {
     std::clock_t start;
     start = std::clock();
 
-    if(*topLeft != grid.GetGraphTopLeft() || *botRight != grid.GetGraphBotRight()) // If either of the corners has changes position (i.e. we're zooming)
+    bool moreIters = (numIterations >= prevNumIterations);
+    bool zooming = (*topLeft != grid.GetGraphTopLeft() || *botRight != grid.GetGraphBotRight()); // If either of the corners has changed position
+
+    if(zooming)
         ClearPic(); // Changing the graph entirely, so just clear it first
+
     grid.SetRangeCorners(*topLeft, *botRight);
     unsigned int winSizeX = window->getSize().x,
                  winSizeY = window->getSize().y - HEIGHT_OFFSET;
@@ -208,10 +247,23 @@ void Runner::UpdateGraph(Vector2ld* topLeft, Vector2ld* botRight) {
                 pixelDeltaY = (topLeft->y - botRight->y) / winSizeY;
     Vector2ld graphCoords = *topLeft;
     unsigned int xLoc = 0, yLoc = 0;
+    sf::Color c;
     for(unsigned int iii = winSizeY; iii != 0; iii--) {         // Iterate vertically
         for(unsigned int jjj = winSizeX; jjj != 0 ; jjj--) {     // Iterate horizontally
+            if(!zooming) {
+                if(inSet[xLoc][yLoc] && !moreIters ||
+                   !inSet[xLoc][yLoc] && moreIters) {
+                    c = sf::Color::Transparent;
+                } else {
+                    c = Colorgen(Iterate(new cx(graphCoords.x, graphCoords.y)));
+                    inSet[xLoc][yLoc] = c == sf::Color::Black;
+                }
+            } else {
+                c = Colorgen(Iterate(new cx(graphCoords.x, graphCoords.y)));
+                inSet[xLoc][yLoc] = c == sf::Color::Black;
+            }
             sf::Vertex loc(sf::Vector2f(xLoc, yLoc),
-                           Colorgen(Iterate(new cx(graphCoords.x, graphCoords.y))));
+                           c);
             pic->draw(&loc, 1, sf::Points);
             graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
             xLoc = xLoc + 1;
@@ -225,6 +277,7 @@ void Runner::UpdateGraph(Vector2ld* topLeft, Vector2ld* botRight) {
         window->display();
     }
 
+    prevNumIterations = numIterations;
     double duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
     std::cout << duration << "\n";
 }
