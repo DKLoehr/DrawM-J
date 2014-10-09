@@ -18,6 +18,7 @@ private:
     int activeBox;
     unsigned int numIterations;
     unsigned int prevNumIterations; // The last number of iterations we did
+    unsigned int colorMult;
 
     sf::RenderWindow* window;   // The window to which we draw the M-set
     sf::RenderWindow* jWindow;  // The window to which we draw J-sets
@@ -37,10 +38,12 @@ private:
     sf::VertexArray box;        // Represents the gray box drawn between *firstCorner and the current mouse position
 
     std::vector<GUI*> elements;  // An alternate way of accessing each gui element
-    const int elementsSize = 2; // Initial size of elements (without any variables)
+    const int elementsSize = 4; // Initial size of elements (without any variables)
 
-    Button okIterations;  // 0
-    InputBox iterations;  // 1
+    InputBox iterations;    // 0
+    Button okIterations;    // 1
+    InputBox colorNum;      // 2
+    Button okColor;         // 3
 
     void Init(); // Initialize the class
     void SetUpGraph();                          // Sets up the graph, inSet, etc. properly for when the program is started
@@ -51,7 +54,9 @@ private:
     void SetActiveElement(double x, double y);  // Determines what activeBox should be based on the mouse coordinates; x and y are window coords to test
     void StepActiveElement(bool increment);     // Increases activeBox by 1 if true, decreases if false, keeping it in valid bounds
     void UpdateIterations();                    // Update numIterations according to what's in the box
+    void UpdateColor();                         // Update the number by which we multiply the iterations for color
     void UpdateGraph(Vector2ld* topLeft, Vector2ld* botRight); // Update the graph given the positions of the top left and bottom right corner
+
     void UpdateJulia(cx pos);
     void ActivateButtons(sf::Event event);      // Activate buttons depending on activeBox and/or the event; event is the event that activated a button
 

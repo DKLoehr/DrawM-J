@@ -15,6 +15,7 @@ Runner::Runner(sf::RenderWindow* w, sf::RenderWindow* j, sf::Font* font, sf::Ren
 void Runner::Init() {
     numIterations = 0;
     prevNumIterations = 0;
+    colorMult = 7;
 
     pic->clear(sf::Color::White);
     graphs.setPosition(0, HEIGHT_OFFSET);
@@ -40,20 +41,26 @@ void Runner::Init() {
     elements = std::vector<GUI*>(0);
 
     /** GUI Creation **/
-    iterations = InputBox(window, inFont, 5, 5, 350, 15, "Number of Iterations"); // 1
+    iterations = InputBox(window, inFont, 5, 5, 73, 15, "Number of Iterations"); // 0
+    elements.push_back(&iterations);
 
     okIterations = Button(window, inFont, iterations.GetPosition().x + iterations.GetSize().x + 210, iterations.GetPosition().y,
-                        108, 15, "Save Changes"); // 0
+                        108, 15, "Save Changes"); // 1
     elements.push_back(&okIterations);
 
-    elements.push_back(&iterations); // Finally push back iterations so that it's at the end of the vector
+    colorNum = InputBox(window, inFont, okIterations.GetPosition().x + okIterations.GetSize().x + 150, 5, 73, 15, "Color Multiple"); // 2
+    elements.push_back(&colorNum);
+
+    okColor = Button(window, inFont, colorNum.GetPosition().x + colorNum.GetSize().x + 150, colorNum.GetPosition().y,
+                        108, 15, "Save Changes"); // 3
+    elements.push_back(&okColor);
 
     /** End GUI Creations **/
 
     for(int iii = 0; iii < elements.size(); iii++) {
         elements[iii]->SetActive(false);
     }
-    activeBox = 1; // Start out highlighting the input box
+    activeBox = 0; // Start out highlighting the input box
     elements[activeBox]->SetActive(true);
     SetUpGraph();
 }
@@ -217,10 +224,18 @@ void Runner::UpdateIterations() {
     UpdateGraph(grid.GetGraphTopLeftP(), grid.GetGraphBotRightP());
 }
 
+void Runner::UpdateColor() {
+    colorMult = ToInt((std::string)colorNum.GetText()); // Set the color multiplier to the number specified in the box
+    UpdateGraph(grid.GetGraphTopLeftP(), grid.GetGraphBotRightP());
+}
+
 void Runner::ActivateButtons(sf::Event event) {
     switch(activeBox) {
-    case 0: // Save Changes for iteration number
+    case 1: // Save Changes for iteration number
         UpdateIterations();
+        break;
+    case 3: // Save Changes for iteration number
+        UpdateColor();
         break;
     default:
         if(event.type == sf::Event::MouseButtonPressed)
@@ -310,7 +325,7 @@ void Runner::ClearPic() {
 inline sf::Color Runner::Colorgen(int seed) {
     if(seed > numIterations) // Didn't go out from the circle, so it's in the set as far as we know
         return sf::Color::Black;
-    return HSVtoRGBOp((seed * 7) % 360); // Loop the colors
+    return HSVtoRGBOp((seed * colorMult) % 360); // Loop the colors
 }
 
 void Runner::Draw() {
