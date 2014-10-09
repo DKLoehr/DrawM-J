@@ -11,6 +11,13 @@ Runner::Runner(sf::RenderWindow* w, sf::RenderWindow* j, sf::Font* font, sf::Ren
     Init();
 }
 
+Runner::~Runner() {
+    for(int iii = 0; iii < WIN_SIZE_X; iii++) {
+        delete numIters[iii];
+    }
+    delete numIters;
+}
+
 
 void Runner::Init() {
     numIterations = 0;
@@ -24,6 +31,16 @@ void Runner::Init() {
     jPic->clear(sf::Color::White);
     jGraphs.setPosition(0, 0);
     jGraphs.setTexture(jPic->getTexture());
+
+    numIters = new uint16_t*[WIN_SIZE_X];
+
+    for(int iii = 0; iii < WIN_SIZE_X; iii++) {
+        numIters[iii] = new uint16_t[WIN_SIZE_Y];
+        if(numIters[iii] == NULL) {
+            std::cout << "ERROR!\n";
+            throw -1;
+        }
+    }
 
     grid = Grid(window, sf::Vector2i(0, HEIGHT_OFFSET), (sf::Vector2i)window->getSize(),
                 Vector2ld(-2, 1), Vector2ld(-1, 1));
@@ -221,6 +238,8 @@ void Runner::StepActiveElement(bool increment) {
 
 void Runner::UpdateIterations() {
     numIterations = ToInt((std::string)iterations.GetText()); // Set numIterations to the number specified in the box
+    if(numIterations > 65535)   // Cap to 2^16 - 1 both to prevent absurd iteration times and to keep it storable in numIters
+        numIterations = 65535;
     UpdateGraph(grid.GetGraphTopLeftP(), grid.GetGraphBotRightP());
 }
 
@@ -262,9 +281,10 @@ void Runner::UpdateGraph(Vector2ld* topLeft, Vector2ld* botRight) {
     start = std::clock();
 
     bool moreIters = (numIterations >= prevNumIterations);
-    bool zooming = (*topLeft != grid.GetGraphTopLeft() || *botRight != grid.GetGraphBotRight()); // If either of the corners has changed position
+    bool check = (*topLeft == grid.GetGraphTopLeft() || *botRight == grid.GetGraphBotRight()) && // Neither of the corners has changed position (not zooming)
+                 !interrupted; // And we weren't interrupted last time
 
-    if(zooming)
+    if(!check && !interrupted) // We're zooming
         ClearPic(); // Changing the graph entirely, so just clear it first
 
     grid.SetRangeCorners(*topLeft, *botRight);
@@ -276,8 +296,8 @@ void Runner::UpdateGraph(Vector2ld* topLeft, Vector2ld* botRight) {
     unsigned int xLoc = 0, yLoc = 0, iters = 0;
     for(unsigned int iii = winSizeY; iii != 0; iii--) {         // Iterate vertically
         for(unsigned int jjj = winSizeX; jjj != 0 ; jjj--) {    // Iterate horizontally
-            if(!zooming && ((numIters[xLoc][yLoc] != numIterations) && !moreIters ||  // Not zooming, and we know that this pixel remains unchanged
-                            (numIters[xLoc][yLoc] == numIterations) && moreIters)) {
+            if(check && ((numIters[xLoc][yLoc] != numIterations) && !moreIters ||  // Not zooming or interrupted, and we know that this pixel remains unchanged
+                        (numIters[xLoc][yLoc] == numIterations) && moreIters)) {
                 graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
                 xLoc = xLoc + 1;
                 continue;
@@ -290,6 +310,10 @@ void Runner::UpdateGraph(Vector2ld* topLeft, Vector2ld* botRight) {
             graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
             xLoc = xLoc + 1;
         }
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::K)) { // K key is kill switch -- stop iterating
+            interrupted = true;
+            return;
+        }
         yLoc = yLoc + 1;
         xLoc = 0;
         graphCoords.x = topLeft->x;                      // Reset x coordinate
@@ -299,9 +323,9 @@ void Runner::UpdateGraph(Vector2ld* topLeft, Vector2ld* botRight) {
         window->display();
     }
 
+    interrupted = false;
     prevNumIterations = numIterations;
-    double duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-    std::cout << duration << "\n";
+    std::cout << (std::clock() - start) / (double)CLOCKS_PER_SEC << "\n";
 }
 
 void Runner::UpdateJulia(cx pos) {

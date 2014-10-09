@@ -19,6 +19,7 @@ private:
     unsigned int numIterations;
     unsigned int prevNumIterations; // The last number of iterations we did
     unsigned int colorMult;
+    bool interrupted; // If our drawing was interrupted
 
     sf::RenderWindow* window;   // The window to which we draw the M-set
     sf::RenderWindow* jWindow;  // The window to which we draw J-sets
@@ -28,7 +29,7 @@ private:
     sf::Sprite graphs;          // The sprite which we use to draw pic to the screen
     sf::Sprite jGraphs;         // As with graphs, but for the J-set window
 
-    uint16_t numIters[WIN_SIZE_X][WIN_SIZE_Y];             // Stores per-pixel if that pixel is in the set (true) or not (false)
+    uint16_t** numIters;             // Stores per-pixel the number of iterations taken for that pixel to leave the set (or when we stopped)
 
     parser::Tree* fct;          // The tree we use to evaluate our expression
 
@@ -71,6 +72,7 @@ private:
 
 public:
     Runner(sf::RenderWindow* w, sf::RenderWindow* j, sf::Font* font, sf::RenderTexture* p, sf::RenderTexture* jP); // Constructor
+    ~Runner();
 
     void HandleEvents();    // Perform all the tasks necessary to run
 
