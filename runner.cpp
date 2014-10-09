@@ -226,7 +226,19 @@ void Runner::UpdateIterations() {
 
 void Runner::UpdateColor() {
     colorMult = ToInt((std::string)colorNum.GetText()); // Set the color multiplier to the number specified in the box
-    UpdateGraph(grid.GetGraphTopLeftP(), grid.GetGraphBotRightP());
+    unsigned int winSizeX = window->getSize().x,
+                 winSizeY = window->getSize().y - HEIGHT_OFFSET;
+    for(unsigned int iii = 0; iii < winSizeY; iii++) {         // Iterate vertically
+        for(unsigned int jjj = 0; jjj < winSizeX ; jjj++) {    // Iterate horizontally
+            if(numIters[jjj][iii] <= numIterations) {
+                sf::Vertex loc(sf::Vector2f(jjj, iii), Colorgen(numIters[jjj][iii]));
+                pic->draw(&loc, 1, sf::Points);
+            }
+        }
+        window->draw(graphs); // Draw the updated graph to the screen after each horizontal line of pixels
+        pic->display();       // Update our graph with the newest points
+        window->display();
+    }
 }
 
 void Runner::ActivateButtons(sf::Event event) {
@@ -263,13 +275,14 @@ void Runner::UpdateGraph(Vector2ld* topLeft, Vector2ld* botRight) {
     Vector2ld graphCoords = *topLeft;
     unsigned int xLoc = 0, yLoc = 0, iters = 0;
     for(unsigned int iii = winSizeY; iii != 0; iii--) {         // Iterate vertically
-        for(unsigned int jjj = winSizeX; jjj != 0 ; jjj--) {     // Iterate horizontally
+        for(unsigned int jjj = winSizeX; jjj != 0 ; jjj--) {    // Iterate horizontally
             if(!zooming && ((numIters[xLoc][yLoc] != numIterations) && !moreIters ||  // Not zooming, and we know that this pixel remains unchanged
                             (numIters[xLoc][yLoc] == numIterations) && moreIters)) {
-                iters = numIters[xLoc][yLoc];
-            } else {
-                iters = Iterate(new cx(graphCoords.x, graphCoords.y));
+                graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
+                xLoc = xLoc + 1;
+                continue;
             }
+            iters = Iterate(new cx(graphCoords.x, graphCoords.y));
             sf::Vertex loc(sf::Vector2f(xLoc, yLoc),
                            Colorgen(iters));
             numIters[xLoc][yLoc] = iters;
