@@ -65,7 +65,6 @@ void Runner::Init() {
     SetUpGraph();
 }
 
-
 void Runner::SetUpGraph() {
     ClearPic();
     Vector2ld TL(-2.05, 1.15),
@@ -76,12 +75,13 @@ void Runner::SetUpGraph() {
     long double pixelDeltaX = (BR.x - TL.x) / winSizeX, // Distance on the graph between the pixels on the window
                 pixelDeltaY = (TL.y - BR.y) / winSizeY;
     Vector2ld graphCoords = TL;
-    unsigned int xLoc = 0, yLoc = 0;
+    unsigned int xLoc = 0, yLoc = 0, iters = 0;
     for(unsigned int iii = winSizeY; iii != 0; iii--) {         // Iterate vertically
         for(unsigned int jjj = winSizeX; jjj != 0 ; jjj--) {     // Iterate horizontally
+            iters = Iterate(new cx(graphCoords.x, graphCoords.y));
             sf::Vertex loc(sf::Vector2f(xLoc, yLoc),
-                           Colorgen(Iterate(new cx(graphCoords.x, graphCoords.y))));
-            inSet[xLoc][yLoc] = (loc.color == sf::Color::Black);
+                           Colorgen(iters));
+            numIters[xLoc][yLoc] = iters;
             pic->draw(&loc, 1, sf::Points);
             graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
             xLoc = xLoc + 1;
@@ -171,7 +171,7 @@ void Runner::HandleEvents() {
     }
 }
 
-int Runner::Iterate(cx* pos, cx* startPos) {
+unsigned int Runner::Iterate(cx* pos, cx* startPos) {
     if(abs(*pos) > 2)   // If we're starting outside our circle of radius 2, we're already done
         return 0;       // Took 0 iterations to get ourside the circle, so return 0
 
@@ -261,18 +261,18 @@ void Runner::UpdateGraph(Vector2ld* topLeft, Vector2ld* botRight) {
     long double pixelDeltaX = (botRight->x - topLeft->x) / winSizeX, // Distance on the graph between the pixels on the window
                 pixelDeltaY = (topLeft->y - botRight->y) / winSizeY;
     Vector2ld graphCoords = *topLeft;
-    unsigned int xLoc = 0, yLoc = 0;
+    unsigned int xLoc = 0, yLoc = 0, iters = 0;
     for(unsigned int iii = winSizeY; iii != 0; iii--) {         // Iterate vertically
         for(unsigned int jjj = winSizeX; jjj != 0 ; jjj--) {     // Iterate horizontally
-            if(!zooming && (inSet[xLoc][yLoc] && !moreIters ||  // Not zooming, and we know that this pixel remains unchanges
-                            !inSet[xLoc][yLoc] && moreIters)) {
-                graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
-                xLoc = xLoc + 1;
-                continue; // No need to draw a new pixel, since this one will remain the same. Next iteration
+            if(!zooming && ((numIters[xLoc][yLoc] != numIterations) && !moreIters ||  // Not zooming, and we know that this pixel remains unchanged
+                            (numIters[xLoc][yLoc] == numIterations) && moreIters)) {
+                iters = numIters[xLoc][yLoc];
+            } else {
+                iters = Iterate(new cx(graphCoords.x, graphCoords.y));
             }
             sf::Vertex loc(sf::Vector2f(xLoc, yLoc),
-                           Colorgen(Iterate(new cx(graphCoords.x, graphCoords.y))));
-            inSet[xLoc][yLoc] = (loc.color == sf::Color::Black);
+                           Colorgen(iters));
+            numIters[xLoc][yLoc] = iters;
             pic->draw(&loc, 1, sf::Points);
             graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
             xLoc = xLoc + 1;
@@ -322,7 +322,7 @@ void Runner::ClearPic() {
     pic->clear(sf::Color::White);   // Clear the canvas (pic) to be fully white
 }
 
-inline sf::Color Runner::Colorgen(int seed) {
+inline sf::Color Runner::Colorgen(unsigned int seed) {
     if(seed > numIterations) // Didn't go out from the circle, so it's in the set as far as we know
         return sf::Color::Black;
     return HSVtoRGBOp((seed * colorMult) % 360); // Loop the colors

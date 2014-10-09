@@ -28,7 +28,7 @@ private:
     sf::Sprite graphs;          // The sprite which we use to draw pic to the screen
     sf::Sprite jGraphs;         // As with graphs, but for the J-set window
 
-    bool inSet[WIN_SIZE_X][WIN_SIZE_Y];             // Stores per-pixel if that pixel is in the set (true) or not (false)
+    uint16_t numIters[WIN_SIZE_X][WIN_SIZE_Y];             // Stores per-pixel if that pixel is in the set (true) or not (false)
 
     parser::Tree* fct;          // The tree we use to evaluate our expression
 
@@ -48,7 +48,7 @@ private:
     void Init(); // Initialize the class
     void SetUpGraph();                          // Sets up the graph, inSet, etc. properly for when the program is started
 
-    int Iterate(cx* pos, cx* startPos = NULL);  // Iterates startPos^2 + pos; returns the number of iterations at which it terminated.
+    unsigned int Iterate(cx* pos, cx* startPos = NULL);  // Iterates startPos^2 + pos; returns the number of iterations at which it terminated.
                                                 // Warning: calls delete on startPos and pos, so pass in a copy of anything you want to keep.
 
     void SetActiveElement(double x, double y);  // Determines what activeBox should be based on the mouse coordinates; x and y are window coords to test
@@ -62,7 +62,7 @@ private:
 
     void ClearPic(); // Clear all points drawn to pic
 
-    sf::Color Colorgen(int seed); // Returns a color based on the input; expected input is the result of of Iterate
+    sf::Color Colorgen(unsigned int seed); // Returns a color based on the input; expected input is the result of of Iterate
 
     /// Helpful functions
     int ToInt(std::string str);

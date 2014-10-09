@@ -28,9 +28,5 @@ int main() {
         run.HandleEvents();
         run.Draw();
     }
-
-    if(!jWindow.isOpen()) {
-        jWindow.close();
-    }
     return 0;
 }
