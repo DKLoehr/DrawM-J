@@ -79,6 +79,7 @@ void Runner::Init() {
     }
     activeBox = 0; // Start out highlighting the input box
     elements[activeBox]->SetActive(true);
+    window->setPosition(sf::Vector2i(0, 0)); // Start out with the main window active rather than the julia set one
     SetUpGraph();
 }
 
@@ -238,13 +239,14 @@ void Runner::StepActiveElement(bool increment) {
 
 void Runner::UpdateIterations() {
     numIterations = ToInt((std::string)iterations.GetText()); // Set numIterations to the number specified in the box
-    if(numIterations > 65535)   // Cap to 2^16 - 1 both to prevent absurd iteration times and to keep it storable in numIters
-        numIterations = 65535;
+    if(numIterations > (1 << 16) - 1)   // Cap to 2^16 - 1 both to prevent absurd iteration times and to keep it storable in numIters
+        numIterations = (1 << 16) - 1;
     UpdateGraph(grid.GetGraphTopLeftP(), grid.GetGraphBotRightP());
 }
 
 void Runner::UpdateColor() {
-    colorMult = ToInt((std::string)colorNum.GetText()); // Set the color multiplier to the number specified in the box
+    colorMult = (float)atof(colorNum.GetText().c_str()); // Set the color multiplier to the number specified in the box
+    std::cout << colorMult << "\n";
     unsigned int winSizeX = window->getSize().x,
                  winSizeY = window->getSize().y - HEIGHT_OFFSET;
     for(unsigned int iii = 0; iii < winSizeY; iii++) {         // Iterate vertically
@@ -277,8 +279,8 @@ void Runner::ActivateButtons(sf::Event event) {
 }
 
 void Runner::UpdateGraph(Vector2ld* topLeft, Vector2ld* botRight) {
-    std::clock_t start;
-    start = std::clock();
+    std::clock_t start; // FOR DEBUGGING
+    start = std::clock(); // FOR DEBUGGING
 
     bool moreIters = (numIterations >= prevNumIterations);
     bool check = (*topLeft == grid.GetGraphTopLeft() || *botRight == grid.GetGraphBotRight()) && // Neither of the corners has changed position (not zooming)
@@ -296,8 +298,8 @@ void Runner::UpdateGraph(Vector2ld* topLeft, Vector2ld* botRight) {
     unsigned int xLoc = 0, yLoc = 0, iters = 0;
     for(unsigned int iii = winSizeY; iii != 0; iii--) {         // Iterate vertically
         for(unsigned int jjj = winSizeX; jjj != 0 ; jjj--) {    // Iterate horizontally
-            if(check && ((numIters[xLoc][yLoc] != numIterations) && !moreIters ||  // Not zooming or interrupted, and we know that this pixel remains unchanged
-                        (numIters[xLoc][yLoc] == numIterations) && moreIters)) {
+            if(check && ((numIters[xLoc][yLoc] > prevNumIterations) && !moreIters ||  // In the set and doing fewer iterations, so ignore
+                        (numIters[xLoc][yLoc] <= prevNumIterations) && moreIters)) {   // Not in the set and doing more iterations, so ignore
                 graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
                 xLoc = xLoc + 1;
                 continue;
@@ -325,6 +327,8 @@ void Runner::UpdateGraph(Vector2ld* topLeft, Vector2ld* botRight) {
 
     interrupted = false;
     prevNumIterations = numIterations;
+
+    // FOR DEBUGGING
     std::cout << (std::clock() - start) / (double)CLOCKS_PER_SEC << "\n";
 }
 
@@ -357,12 +361,13 @@ void Runner::UpdateJulia(cx pos) {
 
 void Runner::ClearPic() {
     pic->clear(sf::Color::White);   // Clear the canvas (pic) to be fully white
+    Draw();
 }
 
 inline sf::Color Runner::Colorgen(unsigned int seed) {
     if(seed > numIterations) // Didn't go out from the circle, so it's in the set as far as we know
         return sf::Color::Black;
-    return HSVtoRGBOp((seed * colorMult) % 360); // Loop the colors
+    return HSVtoRGBOp((int)(seed * colorMult) % 360); // Loop the colors
 }
 
 void Runner::Draw() {

@@ -18,7 +18,7 @@ private:
     int activeBox;
     unsigned int numIterations;
     unsigned int prevNumIterations; // The last number of iterations we did
-    unsigned int colorMult;
+    float colorMult;
     bool interrupted; // If our drawing was interrupted
 
     sf::RenderWindow* window;   // The window to which we draw the M-set

@@ -14,6 +14,7 @@ int main() {
     sf::RenderWindow jWindow(sf::VideoMode(500, 500), "Julia Set");
     jWindow.setPosition(sf::Vector2i(window.getSize().x + 16, 0));
 
+
     sf::RenderTexture pic;
     if(!pic.create(window.getSize().x, window.getSize().y - HEIGHT_OFFSET))
         return -2;
@@ -22,8 +23,7 @@ int main() {
     if(!jPic.create(jWindow.getSize().x, jWindow.getSize().y))
         return -3;
 
-    Runner run = Runner(&window, &jWindow, &inFont, &pic, &jPic);
-
+    Runner run(&window, &jWindow, &inFont, &pic, &jPic);
     while(window.isOpen()) {
         run.HandleEvents();
         run.Draw();
