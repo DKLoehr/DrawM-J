@@ -117,7 +117,7 @@ void Runner::HandleEvents() {
     while(jWindow->pollEvent(event)); // For internal handling of events
     while(window->pollEvent(event)) {
         if(event.type == sf::Event::Closed ||
-           (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape))
+           (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape && sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)))
         {
             window->close();
         } else if(event.type == sf::Event::TextEntered) {
@@ -140,10 +140,13 @@ void Runner::HandleEvents() {
         } else if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Tab) {
             StepActiveElement(!(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) ||
                                 sf::Keyboard::isKeyPressed(sf::Keyboard::RShift)));
+        } else if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
+            delete firstCorner;
+            firstCorner = NULL;
         } else if(event.type == sf::Event::MouseButtonPressed) {
             if(event.mouseButton.y < HEIGHT_OFFSET) { // Above the graphs
                 ActivateButtons(event);
-            } else if(!sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) { // In one of the graphs, not Julia Set
+            } else if(!sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) { // In one of the graphs, not generating a Julia Set
                 if(firstCorner == NULL) {   // Aren't currently selecting a rectangle
                     firstCorner = new Vector2ld(grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).x, // Graph coordinates of the first corner
                                                 grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).y);
