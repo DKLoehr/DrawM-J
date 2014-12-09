@@ -29,7 +29,7 @@ private:
     sf::Sprite graphs;          // The sprite which we use to draw pic to the screen
     sf::Sprite jGraphs;         // As with graphs, but for the J-set window
 
-    uint16_t** numIters;             // Stores per-pixel the number of iterations taken for that pixel to leave the set (or when we stopped)
+    uint16_t** numIters;        // Stores per-pixel the number of iterations taken for that pixel to leave the set (or when we stopped)
 
     parser::Tree* fct;          // The tree we use to evaluate our expression
 
@@ -38,7 +38,7 @@ private:
     Vector2ld* firstCorner;     // Pointer to the location of the first click on the graph
     sf::VertexArray box;        // Represents the gray box drawn between *firstCorner and the current mouse position
 
-    std::vector<GUI*> elements;  // An alternate way of accessing each gui element
+    std::vector<GUI*> elements; // An alternate way of accessing each gui element
     const int elementsSize = 4; // Initial size of elements (without any variables)
 
     InputBox iterations;    // 0

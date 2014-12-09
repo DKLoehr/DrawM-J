@@ -30,7 +30,7 @@ private:
     sf::Vector2i m_size;
 
 
-    /** The following are all relative to the GRAPH **/
+    /** The following are all relative to the GRAPH, not the window **/
     /// The coordinates of the center of the grid (usually (0,0))
     Vector2ld m_center;
     /// How far from the center we go in the x and y directions
