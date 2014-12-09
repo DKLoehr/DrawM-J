@@ -46,6 +46,9 @@ public:
 
     virtual ~MWindow();
 
+    void Create(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2i wBotRight, Vector2ld gTopLeft, Vector2ld gBotRight,
+                unsigned int* numIt, unsigned int* pNumIt, float* cMult);
+
 
     void PollEvent(sf::Event& event);
     void Draw();

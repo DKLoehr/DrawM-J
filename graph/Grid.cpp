@@ -38,7 +38,7 @@ void Grid::SetRangeCorners(Vector2ld topLeft, Vector2ld botRight) {
              Vector2ld(botRight.y, topLeft.y));
 }
 
-Vector2ld Grid::WindowToGraph(Vector2ld wLoc) {
+Vector2ld Grid::WindowToGraph(Vector2ld wLoc) const {
     double x = wLoc.x, y = wLoc.y;
     if(x < m_position.x) x = m_position.x;
     if(x > m_position.x + m_size.x) x = m_position.x + m_size.x;
@@ -53,11 +53,11 @@ Vector2ld Grid::WindowToGraph(Vector2ld wLoc) {
     return Vector2ld(x, y);
 }
 
-Vector2ld Grid::WindowToGraph(double xPos, double yPos) {
+Vector2ld Grid::WindowToGraph(double xPos, double yPos) const {
     return WindowToGraph(Vector2ld(xPos, yPos));
 }
 
-Vector2ld Grid::GraphToWindow(Vector2ld gLoc) {
+Vector2ld Grid::GraphToWindow(Vector2ld gLoc) const {
     double x = gLoc.x - m_center.x;
     double y = gLoc.y - m_center.y;
     x *= m_size.x / 2 / (m_center.x - m_xRange.x);
@@ -72,11 +72,11 @@ Vector2ld Grid::GraphToWindow(Vector2ld gLoc) {
     return Vector2ld(x, y);
 }
 
-Vector2ld Grid::GraphToWindow(double xPos, double yPos) {
+Vector2ld Grid::GraphToWindow(double xPos, double yPos) const {
     return GraphToWindow(Vector2ld(xPos, yPos));
 }
 
-Vector2ld Grid::GraphToPic(Vector2ld gLoc) {
+Vector2ld Grid::GraphToPic(Vector2ld gLoc) const {
     /*Vector2ld coords = GraphToWindow(gLoc);
     coords -= Vector2ld(0, m_origWin.y); // subtract original window size
     coords.y *= -1;
@@ -84,22 +84,22 @@ Vector2ld Grid::GraphToPic(Vector2ld gLoc) {
     return GraphToWindow(gLoc) - Vector2ld(0, m_position.y);
 }
 
-Vector2ld Grid::GraphToPic(double xPos, double yPos) {
+Vector2ld Grid::GraphToPic(double xPos, double yPos) const {
     return GraphToPic(Vector2ld(xPos, yPos));
 }
 
-Vector2ld Grid::GetGraphTopLeft() {
+Vector2ld Grid::GetGraphTopLeft() const {
     return Vector2ld(m_xRange.x, m_yRange.y);
 }
 
-Vector2ld Grid::GetGraphBotRight() {
+Vector2ld Grid::GetGraphBotRight() const {
     return Vector2ld(m_xRange.y, m_yRange.x);
 }
 
-Vector2ld* Grid::GetGraphTopLeftP() {
+Vector2ld* Grid::GetGraphTopLeftP() const {
     return new Vector2ld(m_xRange.x, m_yRange.y);
 }
 
-Vector2ld* Grid::GetGraphBotRightP() {
+Vector2ld* Grid::GetGraphBotRightP() const {
     return new Vector2ld(m_xRange.y, m_yRange.x);
 }

@@ -41,15 +41,16 @@ void Runner::Init() {
     activeBox = 0; // Start out highlighting the input box
     elements[activeBox]->SetActive(true);
 
-    windows = std::vector<MWindow>(0);
-    windows.push_back(MWindow(inFont, sf::Vector2i(0, 100), sf::Vector2i(100, 200), Vector2ld(-2.05, 1.15), Vector2ld(.75, -1.15),
-                              &numIterations, &prevNumIterations, &colorMult));
+    windows = std::vector<MWindow>(1);
+    windows[0].Create(inFont, sf::Vector2i(0, 89), sf::Vector2i(300, 380), Vector2ld(-2.05, 1.15), Vector2ld(.75, -1.15),
+                      &numIterations, &prevNumIterations, &colorMult);
+    activeWindow = 0;
 }
 
 void Runner::HandleEvents() {
     sf::Event event;
     for(int iii = 0; iii < windows.size(); iii++) {
-        if(iii == activeWindow)
+        if(iii != activeWindow)
             continue; // Handle the active window separately
         windows[iii].PollEvent(event); // Internal event handling for non-main, non-active windows
     }

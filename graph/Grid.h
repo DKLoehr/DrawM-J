@@ -60,23 +60,23 @@ public:
     /** Functions for converting from graph coordinates to window coordinates and vice-versa **/
 
     /// Given the location on the window, returns the coordinates of the point on the graph
-    Vector2ld WindowToGraph(Vector2ld wLoc);
-    Vector2ld WindowToGraph(double xPos, double yPos);
+    Vector2ld WindowToGraph(Vector2ld wLoc) const;
+    Vector2ld WindowToGraph(double xPos, double yPos) const;
     /// Given the location on the graph, returns the coordinates of the pixel on the window
-    Vector2ld GraphToWindow(Vector2ld gLoc);
-    Vector2ld GraphToWindow(double xPos, double yPos);
+    Vector2ld GraphToWindow(Vector2ld gLoc) const;
+    Vector2ld GraphToWindow(double xPos, double yPos) const;
     /// Given the location on the graph, returns the coordinates of the pixel on the canvas
-    Vector2ld GraphToPic(Vector2ld gLoc);
-    Vector2ld GraphToPic(double xPos, double yPos);
+    Vector2ld GraphToPic(Vector2ld gLoc) const;
+    Vector2ld GraphToPic(double xPos, double yPos) const;
 
 
     /** Functions for getting information from the grid **/
     /// Returns the graph locations of the top right and bottom left corners of the graph, respectively
-    Vector2ld GetGraphTopLeft();
-    Vector2ld GetGraphBotRight();
+    Vector2ld GetGraphTopLeft() const;
+    Vector2ld GetGraphBotRight() const;
     /// As above, but returns a pointer to the Vector instead
-    Vector2ld* GetGraphTopLeftP();
-    Vector2ld* GetGraphBotRightP();
+    Vector2ld* GetGraphTopLeftP() const;
+    Vector2ld* GetGraphBotRightP() const;
 };
 
 #endif // GRID_H

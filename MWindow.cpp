@@ -1,12 +1,43 @@
 #include "MWindow.h"
 
-MWindow::MWindow() {};
+MWindow::MWindow() {
+    numIterations = NULL;
+    prevNumIterations = NULL;
+    colorMult = NULL;
+    numIters = NULL;
+};
 
 MWindow::MWindow(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2i wBotRight, Vector2ld gTopLeft, Vector2ld gBotRight,
-                 unsigned int* numIt, unsigned int* pNumIt, float* cMult):
-            inFont(f)
+                 unsigned int* numIt, unsigned int* pNumIt, float* cMult)
 {
-    sf::RenderWindow window(sf::VideoMode(wBotRight.x - wTopLeft.x, wTopLeft.y - wBotRight.y), "");
+    Create(f, wTopLeft, wBotRight, gTopLeft, gBotRight, numIt, pNumIt, cMult);
+}
+
+MWindow::MWindow(const MWindow& target) {
+    if(target.numIterations == NULL) { // Looks like this window used the default constructor.
+        numIterations = NULL;
+        prevNumIterations = NULL;
+        colorMult = NULL;
+        numIters = NULL;
+    }
+    else {
+        Create(target.inFont, target.window.getPosition(), target.window.getPosition() + sf::Vector2i(target.window.getSize().x, target.window.getSize().y),
+               target.grid.GetGraphTopLeft(), target.grid.GetGraphBotRight(), target.numIterations, target.prevNumIterations, target.colorMult);
+    }
+}
+
+MWindow::~MWindow()
+{
+    delete(firstCorner);
+
+}
+
+void MWindow::Create(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2i wBotRight, Vector2ld gTopLeft, Vector2ld gBotRight,
+                     unsigned int* numIt, unsigned int* pNumIt, float* cMult)
+{
+    inFont = f;
+
+    window.create(sf::VideoMode(wBotRight.x - wTopLeft.x, wBotRight.y - wTopLeft.y), "");
     window.setPosition(wTopLeft);
 
     if(!pic.create(window.getSize().x, window.getSize().y)) {
@@ -34,36 +65,6 @@ MWindow::MWindow(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2i wBotRight, Vec
 
     numIters = NULL;
 }
-
-MWindow::MWindow(const MWindow& target) {
-    sf::RenderWindow window(sf::VideoMode(target.window.getSize().x, target.window.getSize().y), "");
-    window.setPosition(target.window.getPosition());
-
-    if(!pic.create(target.pic.getSize().x, target.pic.getSize().y)) {
-        std::cout << "Error creating RenderTexture\n";
-        exit(-2);
-    }
-
-    graphs = target.graphs;
-
-    grid = target.grid;
-
-    firstCorner = target.firstCorner;
-    zoomBox = target.zoomBox;
-
-    numIterations = target.numIterations;
-    prevNumIterations = target.prevNumIterations;
-    colorMult = target.colorMult;
-
-    numIters = target.numIters;
-}
-
-MWindow::~MWindow()
-{
-    delete(firstCorner);
-
-}
-
 unsigned int MWindow::Iterate(cx* pos, cx* startPos) {
     if(abs(*pos) > 2)   // If we're starting outside our circle of radius 2, we're already done
         return 0;       // Took 0 iterations to get ourside the circle, so return 0
