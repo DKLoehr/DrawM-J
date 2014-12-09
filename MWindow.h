@@ -33,19 +33,22 @@ private:
 
     void IterateGraph(); // Iterates across the entire graph, updating each point
 
-    void Draw();
-
     sf::Color Colorgen(unsigned int seed);
     sf::Color HSVtoRGBOp(int hue);
 
 public:
+    MWindow(); // Default constructor: Will not create a useable window
+
     MWindow(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2i wBotRight, Vector2ld gTopLeft, Vector2ld gBotRight,
             unsigned int* numIt, unsigned int* pNumIt, float* cMult);
 
     MWindow(const MWindow& target); // Move Constructor
 
-
     virtual ~MWindow();
+
+
+    void PollEvent(sf::Event& event);
+    void Draw();
 };
 
 #endif // MWINDOW_H

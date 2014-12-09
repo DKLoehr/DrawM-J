@@ -1,5 +1,7 @@
 #include "MWindow.h"
 
+MWindow::MWindow() {};
+
 MWindow::MWindow(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2i wBotRight, Vector2ld gTopLeft, Vector2ld gBotRight,
                  unsigned int* numIt, unsigned int* pNumIt, float* cMult):
             inFont(f)
@@ -134,6 +136,10 @@ void MWindow::IterateGraph() {
 
     // FOR DEBUGGING
     std::cout << (std::clock() - start) / (double)CLOCKS_PER_SEC << "\n";
+}
+
+void MWindow::PollEvent(sf::Event& event) {
+    window.pollEvent(event);
 }
 
 inline sf::Color MWindow::Colorgen(unsigned int seed) {
