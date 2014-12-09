@@ -21,7 +21,7 @@ private:
     Vector2ld* firstCorner;
     sf::VertexArray zoomBox;
 
-    int* numIterations;
+    unsigned int* numIterations;
     unsigned int* prevNumIterations; // The last number of iterations we did
     float* colorMult;
 
@@ -33,12 +33,14 @@ private:
 
     void IterateGraph(); // Iterates across the entire graph, updating each point
 
+    void Draw();
+
     sf::Color Colorgen(unsigned int seed);
     sf::Color HSVtoRGBOp(int hue);
 
 public:
     MWindow(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2i wBotRight, Vector2ld gTopLeft, Vector2ld gBotRight,
-            int* numIt, unsigned int* pNumIt, float* cMult);
+            unsigned int* numIt, unsigned int* pNumIt, float* cMult);
 
 
     virtual ~MWindow();

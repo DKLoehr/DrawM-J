@@ -11,19 +11,7 @@ int main() {
     sf::RenderWindow window(sf::VideoMode(WIN_SIZE_X, WIN_SIZE_Y), "Draw M&J Revamped");
     window.setPosition(sf::Vector2i(0, 0));
 
-    sf::RenderWindow jWindow(sf::VideoMode(500, 500), "Julia Set");
-    jWindow.setPosition(sf::Vector2i(window.getSize().x + 16, 0));
-
-
-    sf::RenderTexture pic;
-    if(!pic.create(window.getSize().x, window.getSize().y - HEIGHT_OFFSET))
-        return -2;
-
-    sf::RenderTexture jPic;
-    if(!jPic.create(jWindow.getSize().x, jWindow.getSize().y))
-        return -3;
-
-    Runner run(&window, &jWindow, &inFont, &pic, &jPic);
+    Runner run(&window, &inFont);
     while(window.isOpen()) {
         run.HandleEvents();
         run.Draw();

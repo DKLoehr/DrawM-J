@@ -1,7 +1,7 @@
 #include "MWindow.h"
 
 MWindow::MWindow(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2i wBotRight, Vector2ld gTopLeft, Vector2ld gBotRight,
-                 int* numIt, unsigned int* pNumIt, float* cMult):
+                 unsigned int* numIt, unsigned int* pNumIt, float* cMult):
             inFont(f)
 {
     sf::RenderWindow window(sf::VideoMode(wBotRight.x - wTopLeft.x, wTopLeft.y - wBotRight.y), "");
@@ -118,6 +118,12 @@ inline sf::Color MWindow::Colorgen(unsigned int seed) {
     if(seed > *numIterations) // Didn't go out from the circle, so it's in the set as far as we know
         return sf::Color::Black;
     return HSVtoRGBOp((int)(seed * *colorMult) % 360); // Loop the colors
+}
+
+void MWindow::Draw() {
+    window.clear(sf::Color::White);
+    window.draw(graphs);
+    window.display();
 }
 
 inline sf::Color MWindow::HSVtoRGBOp(int hue) {
