@@ -11,7 +11,7 @@
 
 #define HEIGHT_OFFSET 40        // The number of pixels between the top of the window and the top of the graphs
 #define WIN_SIZE_X 1000
-#define WIN_SIZE_Y 750
+#define WIN_SIZE_Y 50
 
 class Runner
 {
@@ -41,10 +41,11 @@ private:
     void StepActiveElement(bool increment);     // Increases activeBox by 1 if true, decreases if false, keeping it in valid bounds
     void UpdateIterations();                    // Update numIterations according to what's in the box
     void UpdateColor();                         // Update the number by which we multiply the iterations for color
-    void UpdateGraph(Vector2ld* topLeft, Vector2ld* botRight); // Update the graph given the positions of the top left and bottom right corner
+    void UpdateGraph();                         // Update the graph given the positions of the top left and bottom right corner
 
     void ActivateButtons(sf::Event event);      // Activate buttons depending on activeBox and/or the event; event is the event that activated a button
 
+    int ToInt(std::string str);
 public:
     Runner(sf::RenderWindow* w, sf::Font* font); // Constructor
     ~Runner();

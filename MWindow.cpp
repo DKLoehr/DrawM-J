@@ -13,7 +13,6 @@ MWindow::MWindow(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2i wBotRight, Vec
     }
 
     pic.clear(sf::Color::White);
-    graphs = sf::Sprite();
     graphs.setPosition(0, 0);
     graphs.setTexture(pic.getTexture());
 
@@ -32,6 +31,29 @@ MWindow::MWindow(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2i wBotRight, Vec
     colorMult = cMult;
 
     numIters = NULL;
+}
+
+MWindow::MWindow(const MWindow& target) {
+    sf::RenderWindow window(sf::VideoMode(target.window.getSize().x, target.window.getSize().y), "");
+    window.setPosition(target.window.getPosition());
+
+    if(!pic.create(target.pic.getSize().x, target.pic.getSize().y)) {
+        std::cout << "Error creating RenderTexture\n";
+        exit(-2);
+    }
+
+    graphs = target.graphs;
+
+    grid = target.grid;
+
+    firstCorner = target.firstCorner;
+    zoomBox = target.zoomBox;
+
+    numIterations = target.numIterations;
+    prevNumIterations = target.prevNumIterations;
+    colorMult = target.colorMult;
+
+    numIters = target.numIters;
 }
 
 MWindow::~MWindow()

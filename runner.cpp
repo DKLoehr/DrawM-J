@@ -94,11 +94,12 @@ void Runner::UpdateIterations() {
     numIterations = ToInt((std::string)iterations.GetText()); // Set numIterations to the number specified in the box
     if(numIterations > (1 << 16) - 1)   // Cap to 2^16 - 1 both to prevent absurd iteration times and to keep it storable in numIters
         numIterations = (1 << 16) - 1;
-    UpdateGraph(grid.GetGraphTopLeftP(), grid.GetGraphBotRightP());
+    UpdateGraph();
 }
 
 void Runner::UpdateColor() {
     colorMult = (float)atof(colorNum.GetText().c_str()); // Set the color multiplier to the number specified in the box
+    UpdateGraph();
 }
 
 void Runner::ActivateButtons(sf::Event event) {
@@ -117,58 +118,8 @@ void Runner::ActivateButtons(sf::Event event) {
     }
 }
 
-void Runner::UpdateGraph(Vector2ld* topLeft, Vector2ld* botRight) {
-    std::clock_t start; // FOR DEBUGGING
-    start = std::clock(); // FOR DEBUGGING
+void Runner::UpdateGraph() {
 
-    bool moreIters = (numIterations >= prevNumIterations);
-    bool check = (*topLeft == grid.GetGraphTopLeft() || *botRight == grid.GetGraphBotRight()) && // Neither of the corners has changed position (not zooming)
-                 !interrupted; // And we weren't interrupted last time
-
-    if(!check && !interrupted) // We're zooming
-        ClearPic(); // Changing the graph entirely, so just clear it first
-
-    grid.SetRangeCorners(*topLeft, *botRight);
-    unsigned int winSizeX = window->getSize().x,
-                 winSizeY = window->getSize().y - HEIGHT_OFFSET;
-    long double pixelDeltaX = (botRight->x - topLeft->x) / winSizeX, // Distance on the graph between the pixels on the window
-                pixelDeltaY = (topLeft->y - botRight->y) / winSizeY;
-    Vector2ld graphCoords = *topLeft;
-    unsigned int xLoc = 0, yLoc = 0, iters = 0;
-    for(unsigned int iii = winSizeY; iii != 0; iii--) {         // Iterate vertically
-        for(unsigned int jjj = winSizeX; jjj != 0 ; jjj--) {    // Iterate horizontally
-            if(check && ((numIters[xLoc][yLoc] > prevNumIterations) && !moreIters ||  // In the set and doing fewer iterations, so ignore
-                        (numIters[xLoc][yLoc] <= prevNumIterations) && moreIters)) {   // Not in the set and doing more iterations, so ignore
-                graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
-                xLoc = xLoc + 1;
-                continue;
-            }
-            iters = Iterate(new cx(graphCoords.x, graphCoords.y));
-            sf::Vertex loc(sf::Vector2f(xLoc, yLoc),
-                           Colorgen(iters));
-            numIters[xLoc][yLoc] = iters;
-            pic->draw(&loc, 1, sf::Points);
-            graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
-            xLoc = xLoc + 1;
-        }
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::K)) { // K key is kill switch -- stop iterating
-            interrupted = true;
-            return;
-        }
-        yLoc = yLoc + 1;
-        xLoc = 0;
-        graphCoords.x = topLeft->x;                      // Reset x coordinate
-        graphCoords.y = graphCoords.y - pixelDeltaY;    // Move one pixel down
-        window->draw(graphs); // Draw the updated graph to the screen after each horizontal line of pixels
-        pic->display();       // Update our graph with the newest points
-        window->display();
-    }
-
-    interrupted = false;
-    prevNumIterations = numIterations;
-
-    // FOR DEBUGGING
-    std::cout << (std::clock() - start) / (double)CLOCKS_PER_SEC << "\n";
 }
 
 void Runner::Draw() {
@@ -179,7 +130,14 @@ void Runner::Draw() {
         elements[iii]->Draw();
     }
 
-    /// Draw graph elements
-    window->draw(graphs); // Draw the updated graph to the screen
     window->display(); // Display everything we've drawn on the screen
+}
+
+// Converts a string with a number in it to an integer containing that number
+inline int Runner::ToInt(std::string str) {
+    int ret = 0;
+    for(int i = str.length() - 1; i >= 0; i--) {
+        ret += pow(10, str.length() - 1 - i) * (str[i] - '0');
+    }
+    return ret;
 }

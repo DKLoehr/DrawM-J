@@ -42,6 +42,8 @@ public:
     MWindow(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2i wBotRight, Vector2ld gTopLeft, Vector2ld gBotRight,
             unsigned int* numIt, unsigned int* pNumIt, float* cMult);
 
+    MWindow(const MWindow& target); // Move Constructor
+
 
     virtual ~MWindow();
 };
