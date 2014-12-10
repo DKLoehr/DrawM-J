@@ -139,13 +139,9 @@ void Runner::ActivateButtons(sf::Event event) {
 }
 
 void Runner::UpdateGraph() {
-    iterThread->terminate();
+    //iterThread->terminate();
+    iterThread->wait();
     delete(iterThread);
-
-    for(int iii = 0; iii < windows.size(); iii++) {
-        windows[iii].SetActive(false);
-    }
-    windows[activeWindow].SetActive(true);
 
     iterThread = new sf::Thread(&MWindow::IterateGraph, &windows[activeWindow]);
     iterThread->launch();
