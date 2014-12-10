@@ -60,11 +60,15 @@ void MWindow::Create(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2u wSize, Vec
     zoomBox[3] = zoomBox[0];
     zoomBox[4] = zoomBox[0];
 
+    interrupted = true;
     numIterations = numIt;
     prevNumIterations = pNumIt;
     colorMult = cMult;
 
-    numIters = NULL;
+    numIters = (uint16_t**)malloc(sizeof(uint16_t*) * window.getSize().x);
+    for(int iii = 0; iii < window.getSize().x; iii++) {
+        numIters[iii] = (uint16_t*)malloc(sizeof(uint16_t) * window.getSize().y);
+    }
 }
 unsigned int MWindow::Iterate(cx* pos, cx* startPos) {
     if(numIterations == NULL) {
@@ -97,7 +101,7 @@ void MWindow::IterateGraph() {
     std::clock_t start; // FOR DEBUGGING
     start = std::clock(); // FOR DEBUGGING
 
-    ///bool check = (*numIterations > *prevNumIterations);
+    bool moreIters = (*numIterations > *prevNumIterations);
     unsigned int winSizeX = window.getSize().x,
                  winSizeY = window.getSize().y;
     Vector2ld topLeft = grid.GetGraphTopLeft(),
@@ -106,27 +110,27 @@ void MWindow::IterateGraph() {
                 pixelDeltaY = (topLeft.y - botRight.y) / winSizeY;
     Vector2ld graphCoords = topLeft;
 
-    unsigned int xLoc = 0, yLoc = 0;/// iters = 0;
+    unsigned int xLoc = 0, yLoc = 0, iters = 0;
     for(unsigned int iii = winSizeY; iii != 0; iii--) {         // Iterate vertically
         for(unsigned int jjj = winSizeX; jjj != 0 ; jjj--) {    // Iterate horizontally
-            /**if(check && ((numIters[xLoc][yLoc] > prevNumIterations) && !moreIters ||  // In the set and doing fewer iterations, so ignore
-                        (numIters[xLoc][yLoc] <= prevNumIterations) && moreIters)) {   // Not in the set and doing more iterations, so ignore
+            if(!interrupted && ((numIters[xLoc][yLoc] > *prevNumIterations) && !moreIters ||    // In the set and doing fewer iterations, so ignore
+                                (numIters[xLoc][yLoc] <= *prevNumIterations) && moreIters)) {   // Not in the set and doing more iterations, so ignore
                 graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
                 xLoc = xLoc + 1;
                 continue;
-            }*/
-            ///iters = Iterate(new cx(graphCoords.x, graphCoords.y));
-            sf::Vertex loc(sf::Vector2f(xLoc, winSizeY - yLoc),
-                           Colorgen(Iterate(new cx(graphCoords.x, graphCoords.y))));
-            ///numIters[xLoc][yLoc] = iters;
+            }
+            iters = Iterate(new cx(graphCoords.x, graphCoords.y));
+            sf::Vertex loc(sf::Vector2f(xLoc, yLoc),
+                           Colorgen(iters));
+            numIters[xLoc][yLoc] = iters;
             pic.draw(&loc, 1, sf::Points);
             graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
             xLoc = xLoc + 1;
         }
-        /**if(sf::Keyboard::isKeyPressed(sf::Keyboard::K)) { // K key is kill switch -- stop iterating
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::K)) { // K key is kill switch -- stop iterating
             interrupted = true;
             return;
-        }*/
+        }
         yLoc = yLoc + 1;
         xLoc = 0;
         graphCoords.x = topLeft.x;       // Reset x coordinate
@@ -137,7 +141,7 @@ void MWindow::IterateGraph() {
         window.setActive(false);
     }
 
-    ///interrupted = false;
+    interrupted = false;
     *prevNumIterations = *numIterations;
 
     // FOR DEBUGGING

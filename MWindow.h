@@ -21,6 +21,8 @@ private:
     Vector2ld* firstCorner;
     sf::VertexArray zoomBox;
 
+    bool interrupted;
+
     unsigned int* numIterations;
     unsigned int* prevNumIterations; // The last number of iterations we did
     float* colorMult;
