@@ -134,6 +134,7 @@ void MWindow::IterateGraph() {
         window.draw(graphs); // Draw the updated graph to the screen after each horizontal line of pixels
         pic.display();       // Update our graph with the newest points
         window.display();
+        window.setActive(false);
     }
 
     ///interrupted = false;
@@ -159,8 +160,11 @@ void MWindow::SetActive(bool isActive) {
 
 void MWindow::Draw() {
     window.clear(sf::Color::White);
+    pic.display();
     window.draw(graphs);
+    window.setActive(true);
     window.display();
+    window.setActive(false);
 }
 
 inline sf::Color MWindow::HSVtoRGBOp(int hue) {

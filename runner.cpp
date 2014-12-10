@@ -140,8 +140,13 @@ void Runner::ActivateButtons(sf::Event event) {
 
 void Runner::UpdateGraph() {
     iterThread->terminate();
-
     delete(iterThread);
+
+    for(int iii = 0; iii < windows.size(); iii++) {
+        windows[iii].SetActive(false);
+    }
+    windows[activeWindow].SetActive(true);
+
     iterThread = new sf::Thread(&MWindow::IterateGraph, &windows[activeWindow]);
     iterThread->launch();
 }
@@ -153,6 +158,8 @@ void Runner::Draw() {
     for(int iii = 0; iii < elements.size(); iii++) { // Draw each GUI element (textboxes, buttons, checkboxes)
         elements[iii]->Draw();
     }
+
+    //windows[activeWindow].Draw();
 
     window->display(); // Display everything we've drawn on the screen
 }
