@@ -31,26 +31,27 @@ private:
     unsigned int Iterate(cx* pos, cx* startPos = NULL);  // Iterates startPos^2 + pos; returns the number of iterations at which it terminated.
                                                          // Warning: calls delete on startPos and pos, so pass in a copy of anything you want to keep.
 
-    void IterateGraph(); // Iterates across the entire graph, updating each point
-
     sf::Color Colorgen(unsigned int seed);
     sf::Color HSVtoRGBOp(int hue);
 
 public:
     MWindow(); // Default constructor: Will not create a useable window
 
-    MWindow(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2i wBotRight, Vector2ld gTopLeft, Vector2ld gBotRight,
+    MWindow(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2u wSize, Vector2ld gTopLeft, Vector2ld gBotRight,
             unsigned int* numIt, unsigned int* pNumIt, float* cMult);
 
     MWindow(const MWindow& target); // Move Constructor
 
     virtual ~MWindow();
 
-    void Create(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2i wBotRight, Vector2ld gTopLeft, Vector2ld gBotRight,
+    void Create(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2u wSize, Vector2ld gTopLeft, Vector2ld gBotRight,
                 unsigned int* numIt, unsigned int* pNumIt, float* cMult);
 
+    void IterateGraph(); // Iterates across the entire graph, updating each point
 
-    void PollEvent(sf::Event& event);
+    int PollEvent(sf::Event& event);
+    void SetActive(bool isActive);
+
     void Draw();
 };
 

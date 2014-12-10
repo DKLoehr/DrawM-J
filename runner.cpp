@@ -42,17 +42,30 @@ void Runner::Init() {
     elements[activeBox]->SetActive(true);
 
     windows = std::vector<MWindow>(1);
-    windows[0].Create(inFont, sf::Vector2i(0, 89), sf::Vector2i(300, 380), Vector2ld(-2.05, 1.15), Vector2ld(.75, -1.15),
+    windows[0].Create(inFont, sf::Vector2i(0, 89), sf::Vector2u(300, 246), Vector2ld(-2.05, 1.15), Vector2ld(.75, -1.15),
                       &numIterations, &prevNumIterations, &colorMult);
     activeWindow = 0;
+
+    iterThread = new sf::Thread(&MWindow::IterateGraph, &windows[0]);
+
+    window->setPosition(sf::Vector2i(0, 0)); // Start out highlighting the main window
 }
 
 void Runner::HandleEvents() {
     sf::Event event;
-    for(int iii = 0; iii < windows.size(); iii++) {
-        if(iii != activeWindow)
-            continue; // Handle the active window separately
-        windows[iii].PollEvent(event); // Internal event handling for non-main, non-active windows
+    for(int iii = 0; iii < windows.size(); iii++) {     // Basic events for all MWindows
+        while(windows[iii].PollEvent(event)) {          // Internal event handling all MWindows
+            if(event.type == sf::Event::LostFocus) {    // The formerly active window is no longer active
+                windows[iii].SetActive(false);
+            }
+            else if(event.type == sf::Event::GainedFocus) { // This is the new active window
+                activeWindow = iii;
+                windows[activeWindow].SetActive(true);
+            }
+        }
+    }
+    while(windows[activeWindow].PollEvent(event)) { // Specific stuff for the one that has focus
+
     }
     while(window->pollEvent(event)) {
         if(event.type == sf::Event::Closed ||
@@ -126,7 +139,11 @@ void Runner::ActivateButtons(sf::Event event) {
 }
 
 void Runner::UpdateGraph() {
+    iterThread->terminate();
 
+    delete(iterThread);
+    iterThread = new sf::Thread(&MWindow::IterateGraph, &windows[activeWindow]);
+    iterThread->launch();
 }
 
 void Runner::Draw() {

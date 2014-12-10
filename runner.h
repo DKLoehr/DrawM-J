@@ -25,6 +25,8 @@ private:
     sf::RenderWindow* window;   // The window to which we draw the M-set
     sf::Font* inFont;           // The font to use for all text (VeraMono)
 
+    sf::Thread* iterThread;      // Thread for the active iteration
+
     std::vector<MWindow> windows; // Vector to hold all the mini windows that are generated
 
     std::vector<GUI*> elements; // An alternate way of accessing each gui element

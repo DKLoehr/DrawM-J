@@ -7,10 +7,10 @@ MWindow::MWindow() {
     numIters = NULL;
 };
 
-MWindow::MWindow(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2i wBotRight, Vector2ld gTopLeft, Vector2ld gBotRight,
+MWindow::MWindow(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2u wSize, Vector2ld gTopLeft, Vector2ld gBotRight,
                  unsigned int* numIt, unsigned int* pNumIt, float* cMult)
 {
-    Create(f, wTopLeft, wBotRight, gTopLeft, gBotRight, numIt, pNumIt, cMult);
+    Create(f, wTopLeft, wSize, gTopLeft, gBotRight, numIt, pNumIt, cMult);
 }
 
 MWindow::MWindow(const MWindow& target) {
@@ -21,7 +21,7 @@ MWindow::MWindow(const MWindow& target) {
         numIters = NULL;
     }
     else {
-        Create(target.inFont, target.window.getPosition(), target.window.getPosition() + sf::Vector2i(target.window.getSize().x, target.window.getSize().y),
+        Create(target.inFont, target.window.getPosition(), target.window.getSize(),
                target.grid.GetGraphTopLeft(), target.grid.GetGraphBotRight(), target.numIterations, target.prevNumIterations, target.colorMult);
     }
 }
@@ -32,12 +32,12 @@ MWindow::~MWindow()
 
 }
 
-void MWindow::Create(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2i wBotRight, Vector2ld gTopLeft, Vector2ld gBotRight,
+void MWindow::Create(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2u wSize, Vector2ld gTopLeft, Vector2ld gBotRight,
                      unsigned int* numIt, unsigned int* pNumIt, float* cMult)
 {
     inFont = f;
 
-    window.create(sf::VideoMode(wBotRight.x - wTopLeft.x, wBotRight.y - wTopLeft.y), "");
+    window.create(sf::VideoMode(wSize.x, wSize.y), "");
     window.setPosition(wTopLeft);
 
     if(!pic.create(window.getSize().x, window.getSize().y)) {
@@ -50,6 +50,7 @@ void MWindow::Create(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2i wBotRight,
     graphs.setTexture(pic.getTexture());
 
     grid = Grid(&window, sf::Vector2i(0, 0), sf::Vector2i(window.getSize()), gTopLeft, gBotRight);
+    grid.SetRangeCorners(gTopLeft, gBotRight);
 
     firstCorner = NULL;
     zoomBox = sf::VertexArray(sf::Lines, 5);
@@ -66,6 +67,9 @@ void MWindow::Create(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2i wBotRight,
     numIters = NULL;
 }
 unsigned int MWindow::Iterate(cx* pos, cx* startPos) {
+    if(numIterations == NULL) {
+        std::cout << "NULL\n";
+    }
     if(abs(*pos) > 2)   // If we're starting outside our circle of radius 2, we're already done
         return 0;       // Took 0 iterations to get ourside the circle, so return 0
 
@@ -100,7 +104,7 @@ void MWindow::IterateGraph() {
               botRight = grid.GetGraphBotRight();
     long double pixelDeltaX = (botRight.x - topLeft.x) / winSizeX, // Distance on the graph between the pixels on the window
                 pixelDeltaY = (topLeft.y - botRight.y) / winSizeY;
-    Vector2ld graphCoords = grid.GetGraphTopLeft();
+    Vector2ld graphCoords = topLeft;
 
     unsigned int xLoc = 0, yLoc = 0;/// iters = 0;
     for(unsigned int iii = winSizeY; iii != 0; iii--) {         // Iterate vertically
@@ -112,7 +116,7 @@ void MWindow::IterateGraph() {
                 continue;
             }*/
             ///iters = Iterate(new cx(graphCoords.x, graphCoords.y));
-            sf::Vertex loc(sf::Vector2f(xLoc, yLoc),
+            sf::Vertex loc(sf::Vector2f(xLoc, winSizeY - yLoc),
                            Colorgen(Iterate(new cx(graphCoords.x, graphCoords.y))));
             ///numIters[xLoc][yLoc] = iters;
             pic.draw(&loc, 1, sf::Points);
@@ -139,14 +143,18 @@ void MWindow::IterateGraph() {
     std::cout << (std::clock() - start) / (double)CLOCKS_PER_SEC << "\n";
 }
 
-void MWindow::PollEvent(sf::Event& event) {
-    window.pollEvent(event);
-}
-
 inline sf::Color MWindow::Colorgen(unsigned int seed) {
     if(seed > *numIterations) // Didn't go out from the circle, so it's in the set as far as we know
         return sf::Color::Black;
     return HSVtoRGBOp((int)(seed * *colorMult) % 360); // Loop the colors
+}
+
+int MWindow::PollEvent(sf::Event& event) {
+    return window.pollEvent(event);
+}
+
+void MWindow::SetActive(bool isActive) {
+    window.setActive(isActive);
 }
 
 void MWindow::Draw() {
