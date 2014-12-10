@@ -51,7 +51,7 @@ public:
 
     void IterateGraph(); // Iterates across the entire graph, updating each point
 
-    int PollEvent(sf::Event& event);
+    int PollEvent(sf::Event& event, Vector2ld** topLeft = NULL, Vector2ld** botRight = NULL, bool checkBox = false);
     void SetActive(bool isActive);
 
     void Draw();

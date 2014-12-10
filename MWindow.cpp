@@ -53,7 +53,7 @@ void MWindow::Create(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2u wSize, Vec
     grid.SetRangeCorners(gTopLeft, gBotRight);
 
     firstCorner = NULL;
-    zoomBox = sf::VertexArray(sf::Lines, 5);
+    zoomBox = sf::VertexArray(sf::LinesStrip, 5);
     zoomBox[0] = sf::Vertex(sf::Vector2f(0, 0), sf::Color(100, 100, 100));
     zoomBox[1] = zoomBox[0];
     zoomBox[2] = zoomBox[0];
@@ -135,10 +135,10 @@ void MWindow::IterateGraph() {
         xLoc = 0;
         graphCoords.x = topLeft.x;       // Reset x coordinate
         graphCoords.y = graphCoords.y - pixelDeltaY;    // Move one pixel down
-        window.draw(graphs); // Draw the updated graph to the screen after each horizontal line of pixels
+        //window.draw(graphs); // Draw the updated graph to the screen after each horizontal line of pixels
         pic.display();       // Update our graph with the newest points
-        window.display();
-        window.setActive(false);
+        //window.display();
+        //window.setActive(false);
     }
 
     interrupted = false;
@@ -154,8 +154,33 @@ inline sf::Color MWindow::Colorgen(unsigned int seed) {
     return HSVtoRGBOp((int)(seed * *colorMult) % 360); // Loop the colors
 }
 
-int MWindow::PollEvent(sf::Event& event) {
-    return window.pollEvent(event);
+int MWindow::PollEvent(sf::Event& event, Vector2ld** topLeft, Vector2ld** botRight, bool checkBox) {
+    int ret = window.pollEvent(event);
+    if(!checkBox || !ret) {
+        return ret;
+    }
+    if(event.type == sf::Event::MouseMoved) {
+        zoomBox[1].position = sf::Vector2f(event.mouseMove.x, zoomBox[0].position.y);
+        zoomBox[2].position = sf::Vector2f(event.mouseMove.x, event.mouseMove.y);
+        zoomBox[3].position = sf::Vector2f(zoomBox[0].position.x, event.mouseMove.y);
+    } else if (event.type == sf::Event::MouseButtonPressed) {
+        if(firstCorner == NULL) {   // Aren't currently selecting a rectangle
+            firstCorner = new Vector2ld(grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).x, // Graph coordinates of the first corner
+                                        grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).y);
+            zoomBox[0].position = sf::Vector2f(event.mouseButton.x, event.mouseButton.y);
+            zoomBox[1] = zoomBox[0];
+            zoomBox[2] = zoomBox[0];
+            zoomBox[3] = zoomBox[0];
+            zoomBox[4] = zoomBox[0];
+        } else {
+            *topLeft = new Vector2ld(*firstCorner);
+            *botRight = new Vector2ld(grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).x, // Graph coordinates of the first corner
+                                      grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).y);
+            delete(firstCorner);
+            firstCorner = NULL;
+        }
+    }
+    return ret;
 }
 
 void MWindow::SetActive(bool isActive) {
@@ -163,12 +188,14 @@ void MWindow::SetActive(bool isActive) {
 }
 
 void MWindow::Draw() {
-    window.clear(sf::Color::White);
+    //window.clear(sf::Color::White);
     pic.display();
     window.draw(graphs);
-    window.setActive(true);
+
+    if(firstCorner != NULL)
+        window.draw(zoomBox);
+
     window.display();
-    window.setActive(false);
 }
 
 inline sf::Color MWindow::HSVtoRGBOp(int hue) {

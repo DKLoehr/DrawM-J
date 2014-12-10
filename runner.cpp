@@ -53,19 +53,25 @@ void Runner::Init() {
 
 void Runner::HandleEvents() {
     sf::Event event;
+    Vector2ld *newTopLeft = NULL, *newBotRight = NULL;
     for(int iii = 0; iii < windows.size(); iii++) {     // Basic events for all MWindows
-        while(windows[iii].PollEvent(event)) {          // Internal event handling all MWindows
-            if(event.type == sf::Event::LostFocus) {    // The formerly active window is no longer active
-                windows[iii].SetActive(false);
+        while(windows[iii].PollEvent(event, &newTopLeft, &newBotRight, (iii == activeWindow))) {
+            if(newTopLeft != NULL) {
+                windows.push_back(MWindow());
+                activeWindow = windows.size() - 1;
+                windows[activeWindow].Create(inFont, sf::Vector2i(300, 300), sf::Vector2u(300, 246), *newTopLeft, *newBotRight,
+                                             &numIterations, &prevNumIterations, &colorMult);
+                delete(newTopLeft);
+                delete(newBotRight);
+                newTopLeft = NULL;
+                newBotRight = NULL;
             }
-            else if(event.type == sf::Event::GainedFocus) { // This is the new active window
+            if(event.type == sf::Event::GainedFocus) {  // This is the new active window
                 activeWindow = iii;
-                windows[activeWindow].SetActive(true);
+            } else if(event.type == sf::Event::TextEntered) {
+                elements[activeBox]->OnTextEntered(event.text.unicode);
             }
         }
-    }
-    while(windows[activeWindow].PollEvent(event)) { // Specific stuff for the one that has focus
-
     }
     while(window->pollEvent(event)) {
         if(event.type == sf::Event::Closed ||
@@ -155,9 +161,11 @@ void Runner::Draw() {
         elements[iii]->Draw();
     }
 
-    //windows[activeWindow].Draw();
-
     window->display(); // Display everything we've drawn on the screen
+
+    for(int iii = 0; iii < windows.size(); iii++) {
+        windows[iii].Draw();
+    }
 }
 
 // Converts a string with a number in it to an integer containing that number
