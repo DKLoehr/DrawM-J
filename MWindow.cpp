@@ -2,13 +2,13 @@
 
 MWindow::MWindow() {
     numIterations = NULL;
-    prevNumIterations = NULL;
+    prevNumIterations = 0;
     colorMult = NULL;
     numIters = NULL;
 };
 
 MWindow::MWindow(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2u wSize, Vector2ld gTopLeft, Vector2ld gBotRight,
-                 unsigned int* numIt, unsigned int* pNumIt, float* cMult)
+                 unsigned int* numIt, unsigned int pNumIt, float* cMult)
 {
     Create(f, wTopLeft, wSize, gTopLeft, gBotRight, numIt, pNumIt, cMult);
 }
@@ -16,7 +16,7 @@ MWindow::MWindow(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2u wSize, Vector2
 MWindow::MWindow(const MWindow& target) {
     if(target.numIterations == NULL) { // Looks like this window used the default constructor.
         numIterations = NULL;
-        prevNumIterations = NULL;
+        prevNumIterations = 0;
         colorMult = NULL;
         numIters = NULL;
     }
@@ -33,7 +33,7 @@ MWindow::~MWindow()
 }
 
 void MWindow::Create(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2u wSize, Vector2ld gTopLeft, Vector2ld gBotRight,
-                     unsigned int* numIt, unsigned int* pNumIt, float* cMult)
+                     unsigned int* numIt, unsigned int pNumIt, float* cMult)
 {
     inFont = f;
 
@@ -107,7 +107,7 @@ void MWindow::IterateGraph() {
     picBuf.create(window.getSize().x, window.getSize().y);
     picBuf.clear(sf::Color(255, 255, 255, 0)); // Transparent white
 
-    bool moreIters = (*numIterations > *prevNumIterations);
+    bool moreIters = (*numIterations > prevNumIterations);
     unsigned int winSizeX = window.getSize().x,
                  winSizeY = window.getSize().y;
     Vector2ld topLeft = grid.GetGraphTopLeft(),
@@ -119,8 +119,8 @@ void MWindow::IterateGraph() {
     unsigned int xLoc = 0, yLoc = 0, iters = 0;
     for(unsigned int iii = winSizeY; iii != 0; iii--) {         // Iterate vertically
         for(unsigned int jjj = winSizeX; jjj != 0 ; jjj--) {    // Iterate horizontally
-            if(!interrupted && ((numIters[xLoc][yLoc] > *prevNumIterations) && !moreIters ||    // In the set and doing fewer iterations, so ignore
-                                (numIters[xLoc][yLoc] <= *prevNumIterations) && moreIters)) {   // Not in the set and doing more iterations, so ignore
+            if(!interrupted && ((numIters[xLoc][yLoc] > prevNumIterations) && !moreIters ||    // In the set and doing fewer iterations, so ignore
+                                (numIters[xLoc][yLoc] <= prevNumIterations) && moreIters)) {   // Not in the set and doing more iterations, so ignore
                 graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
                 xLoc = xLoc + 1;
                 continue;
@@ -151,7 +151,7 @@ void MWindow::IterateGraph() {
     picBuf.clear();
 
     interrupted = false;
-    *prevNumIterations = *numIterations;
+    prevNumIterations = *numIterations;
 
     // FOR DEBUGGING
     std::cout << (std::clock() - start) / (double)CLOCKS_PER_SEC << "\n";
@@ -195,7 +195,6 @@ int MWindow::PollEvent(sf::Event& event, Vector2ld** topLeft, Vector2ld** botRig
 void MWindow::UpdateGraph() {
     iterThread->wait();
     iterThread->launch();
-    //IterateGraph();
 }
 
 void MWindow::SetActive(bool isActive) {
@@ -204,8 +203,6 @@ void MWindow::SetActive(bool isActive) {
 
 void MWindow::Draw() {
     window.clear(sf::Color::White);
-    //pic.display();
-    //graphs.setTexture(pic.getTexture());
     window.draw(graphs);
 
     if(firstCorner != NULL)

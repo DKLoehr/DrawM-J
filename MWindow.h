@@ -26,7 +26,7 @@ private:
     bool interrupted;
 
     unsigned int* numIterations;
-    unsigned int* prevNumIterations; // The last number of iterations we did
+    unsigned int prevNumIterations; // The last number of iterations we did
     float* colorMult;
 
     uint16_t** numIters;        // Stores per-pixel the number of iterations taken for that pixel to leave the set (or when we stopped)
@@ -43,14 +43,14 @@ public:
     MWindow(); // Default constructor: Will not create a useable window
 
     MWindow(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2u wSize, Vector2ld gTopLeft, Vector2ld gBotRight,
-            unsigned int* numIt, unsigned int* pNumIt, float* cMult);
+            unsigned int* numIt, unsigned int pNumIt, float* cMult);
 
     MWindow(const MWindow& target); // Move Constructor
 
     virtual ~MWindow();
 
     void Create(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2u wSize, Vector2ld gTopLeft, Vector2ld gBotRight,
-                unsigned int* numIt, unsigned int* pNumIt, float* cMult);
+                unsigned int* numIt, unsigned int pNumIt, float* cMult);
 
     void UpdateGraph();
 
