@@ -60,6 +60,8 @@ void MWindow::Create(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2u wSize, Vec
     zoomBox[3] = zoomBox[0];
     zoomBox[4] = zoomBox[0];
 
+    iterThread = new sf::Thread(&MWindow::IterateGraph, this);
+
     interrupted = true;
     numIterations = numIt;
     prevNumIterations = pNumIt;
@@ -181,6 +183,11 @@ int MWindow::PollEvent(sf::Event& event, Vector2ld** topLeft, Vector2ld** botRig
         }
     }
     return ret;
+}
+
+void MWindow::UpdateGraph() {
+    iterThread->wait();
+    iterThread->launch();
 }
 
 void MWindow::SetActive(bool isActive) {

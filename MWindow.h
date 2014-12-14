@@ -21,6 +21,8 @@ private:
     Vector2ld* firstCorner;
     sf::VertexArray zoomBox;
 
+    sf::Thread* iterThread;      // Thread for the iteration
+
     bool interrupted;
 
     unsigned int* numIterations;
@@ -29,9 +31,10 @@ private:
 
     uint16_t** numIters;        // Stores per-pixel the number of iterations taken for that pixel to leave the set (or when we stopped)
 
-
     unsigned int Iterate(cx* pos, cx* startPos = NULL);  // Iterates startPos^2 + pos; returns the number of iterations at which it terminated.
                                                          // Warning: calls delete on startPos and pos, so pass in a copy of anything you want to keep.
+
+    void IterateGraph(); // Iterates across the entire graph, updating each point
 
     sf::Color Colorgen(unsigned int seed);
     sf::Color HSVtoRGBOp(int hue);
@@ -49,7 +52,7 @@ public:
     void Create(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2u wSize, Vector2ld gTopLeft, Vector2ld gBotRight,
                 unsigned int* numIt, unsigned int* pNumIt, float* cMult);
 
-    void IterateGraph(); // Iterates across the entire graph, updating each point
+    void UpdateGraph();
 
     int PollEvent(sf::Event& event, Vector2ld** topLeft = NULL, Vector2ld** botRight = NULL, bool checkBox = false);
     void SetActive(bool isActive);

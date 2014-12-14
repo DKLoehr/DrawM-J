@@ -46,8 +46,6 @@ void Runner::Init() {
                       &numIterations, &prevNumIterations, &colorMult);
     activeWindow = 0;
 
-    iterThread = new sf::Thread(&MWindow::IterateGraph, &windows[0]);
-
     window->setPosition(sf::Vector2i(0, 0)); // Start out highlighting the main window
 }
 
@@ -145,12 +143,7 @@ void Runner::ActivateButtons(sf::Event event) {
 }
 
 void Runner::UpdateGraph() {
-    //iterThread->terminate();
-    iterThread->wait();
-    delete(iterThread);
-
-    iterThread = new sf::Thread(&MWindow::IterateGraph, &windows[activeWindow]);
-    iterThread->launch();
+    windows[activeWindow].UpdateGraph();
 }
 
 void Runner::Draw() {
