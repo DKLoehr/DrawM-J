@@ -43,7 +43,7 @@ void Runner::Init() {
 
     windows = std::vector<MWindow>(1);
     windows[0].Create(inFont, sf::Vector2i(0, 89), sf::Vector2u(300, 246), Vector2ld(-2.05, 1.15), Vector2ld(.75, -1.15),
-                      &numIterations, prevNumIterations, &colorMult);
+                      &numIterations, &colorMult);
     activeWindow = 0;
 
     window->setPosition(sf::Vector2i(0, 0)); // Start out highlighting the main window
@@ -58,7 +58,8 @@ void Runner::HandleEvents() {
                 windows.push_back(MWindow());
                 activeWindow = windows.size() - 1;
                 windows[activeWindow].Create(inFont, sf::Vector2i(300, 300), sf::Vector2u(300, 246), *newTopLeft, *newBotRight,
-                                             &numIterations, prevNumIterations, &colorMult);
+                                                   &numIterations, &colorMult);
+                windows[activeWindow].UpdateGraph();
                 delete(newTopLeft);
                 delete(newBotRight);
                 newTopLeft = NULL;
@@ -73,6 +74,9 @@ void Runner::HandleEvents() {
                                     sf::Keyboard::isKeyPressed(sf::Keyboard::RShift)));
             } else if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Return) {
                 ActivateButtons(event);
+            } else if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape &&
+                      sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
+                window->close(); // Enda the program
             }
         }
     }

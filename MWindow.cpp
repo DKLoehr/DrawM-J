@@ -8,9 +8,9 @@ MWindow::MWindow() {
 };
 
 MWindow::MWindow(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2u wSize, Vector2ld gTopLeft, Vector2ld gBotRight,
-                 unsigned int* numIt, unsigned int pNumIt, float* cMult)
+                 unsigned int* numIt, float* cMult)
 {
-    Create(f, wTopLeft, wSize, gTopLeft, gBotRight, numIt, pNumIt, cMult);
+    Create(f, wTopLeft, wSize, gTopLeft, gBotRight, numIt, cMult);
 }
 
 MWindow::MWindow(const MWindow& target) {
@@ -22,7 +22,13 @@ MWindow::MWindow(const MWindow& target) {
     }
     else {
         Create(target.inFont, target.window.getPosition(), target.window.getSize(),
-               target.grid.GetGraphTopLeft(), target.grid.GetGraphBotRight(), target.numIterations, target.prevNumIterations, target.colorMult);
+               target.grid.GetGraphTopLeft(), target.grid.GetGraphBotRight(), target.numIterations, target.colorMult);
+        prevNumIterations = target.prevNumIterations;
+        graphs.setTexture(target.pic.getTexture());
+        graphs.setPosition(0, 0);
+        pic.draw(graphs);
+        pic.display();
+        graphs.setTexture(pic.getTexture());
     }
 }
 
@@ -33,7 +39,7 @@ MWindow::~MWindow()
 }
 
 void MWindow::Create(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2u wSize, Vector2ld gTopLeft, Vector2ld gBotRight,
-                     unsigned int* numIt, unsigned int pNumIt, float* cMult)
+                     unsigned int* numIt, float* cMult)
 {
     inFont = f;
 
@@ -64,7 +70,7 @@ void MWindow::Create(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2u wSize, Vec
 
     interrupted = true;
     numIterations = numIt;
-    prevNumIterations = pNumIt;
+    prevNumIterations = 0;
     colorMult = cMult;
 
     numIters = (uint16_t**)malloc(sizeof(uint16_t*) * window.getSize().x);
@@ -115,6 +121,7 @@ void MWindow::IterateGraph() {
     long double pixelDeltaX = (botRight.x - topLeft.x) / winSizeX, // Distance on the graph between the pixels on the window
                 pixelDeltaY = (topLeft.y - botRight.y) / winSizeY;
     Vector2ld graphCoords = topLeft;
+    int startNumIters = *numIterations;
 
     unsigned int xLoc = 0, yLoc = 0, iters = 0;
     for(unsigned int iii = winSizeY; iii != 0; iii--) {         // Iterate vertically
@@ -150,7 +157,7 @@ void MWindow::IterateGraph() {
     graphs.setTexture(pic.getTexture());
     picBuf.clear();
 
-    interrupted = false;
+    interrupted = (*numIterations != startNumIters);
     prevNumIterations = *numIterations;
 
     // FOR DEBUGGING
@@ -172,7 +179,7 @@ int MWindow::PollEvent(sf::Event& event, Vector2ld** topLeft, Vector2ld** botRig
         zoomBox[1].position = sf::Vector2f(event.mouseMove.x, zoomBox[0].position.y);
         zoomBox[2].position = sf::Vector2f(event.mouseMove.x, event.mouseMove.y);
         zoomBox[3].position = sf::Vector2f(zoomBox[0].position.x, event.mouseMove.y);
-    } else if (event.type == sf::Event::MouseButtonPressed) {
+    } else if(event.type == sf::Event::MouseButtonPressed) {
         if(firstCorner == NULL) {   // Aren't currently selecting a rectangle
             firstCorner = new Vector2ld(grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).x, // Graph coordinates of the first corner
                                         grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).y);
@@ -188,6 +195,9 @@ int MWindow::PollEvent(sf::Event& event, Vector2ld** topLeft, Vector2ld** botRig
             delete(firstCorner);
             firstCorner = NULL;
         }
+    } else if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
+        delete(firstCorner);
+        firstCorner = NULL;
     }
     return ret;
 }

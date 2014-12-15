@@ -43,14 +43,14 @@ public:
     MWindow(); // Default constructor: Will not create a useable window
 
     MWindow(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2u wSize, Vector2ld gTopLeft, Vector2ld gBotRight,
-            unsigned int* numIt, unsigned int pNumIt, float* cMult);
+            unsigned int* numIt, float* cMult);
 
     MWindow(const MWindow& target); // Move Constructor
 
     virtual ~MWindow();
 
     void Create(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2u wSize, Vector2ld gTopLeft, Vector2ld gBotRight,
-                unsigned int* numIt, unsigned int pNumIt, float* cMult);
+                unsigned int* numIt, float* cMult);
 
     void UpdateGraph();
 
