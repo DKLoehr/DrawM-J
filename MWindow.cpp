@@ -123,11 +123,12 @@ void MWindow::IterateGraph() {
     long double pixelDeltaX = (botRight.x - topLeft.x) / winSizeX, // Distance on the graph between the pixels on the window
                 pixelDeltaY = (topLeft.y - botRight.y) / winSizeY;
     Vector2ld graphCoords = topLeft;
+    graphCoords.y = botRight.y;
     int startNumIters = *numIterations;
 
     std::printf("(%f, %f), (%f, %f) \n", (double)(topLeft.x), (double)(topLeft.y), (double)(botRight.x), (double)(botRight.y));
 
-    unsigned int xLoc = 0, yLoc = 0, iters = 0;
+    unsigned int xLoc = 0, yLoc = winSizeY, iters = 0;
     for(unsigned int iii = winSizeY; iii != 0; iii--) {         // Iterate vertically
         for(unsigned int jjj = winSizeX; jjj != 0 ; jjj--) {    // Iterate horizontally
             if(!interrupted && ((numIters[xLoc][yLoc] > prevNumIterations) && !moreIters ||    // In the set and doing fewer iterations, so ignore
@@ -140,7 +141,7 @@ void MWindow::IterateGraph() {
             sf::Vertex loc(sf::Vector2f(xLoc, yLoc),
                            Colorgen(iters));
             numIters[xLoc][yLoc] = iters;
-            picBuf.draw(&loc, 1, sf::Points);
+            pic.draw(&loc, 1, sf::Points);
             graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
             xLoc = xLoc + 1;
         }
@@ -148,15 +149,15 @@ void MWindow::IterateGraph() {
             interrupted = true;
             return;
         }*/
-        yLoc = yLoc + 1;
+        yLoc = yLoc - 1;
         xLoc = 0;
         graphCoords.x = topLeft.x;       // Reset x coordinate
-        graphCoords.y = graphCoords.y - pixelDeltaY;    // Move one pixel down
+        graphCoords.y = graphCoords.y + pixelDeltaY;    // Move one pixel down
     }
 
-    picBuf.display();
-    graphs.setTexture(picBuf.getTexture());
-    pic.draw(graphs);
+    //picBuf.display();
+    //graphs.setTexture(picBuf.getTexture());
+    //pic.draw(graphs);
     pic.display();
     graphs.setTexture(pic.getTexture());
     //picBuf.clear();

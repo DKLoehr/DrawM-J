@@ -12,11 +12,11 @@ int main() {
     window.setPosition(sf::Vector2i(0, 0));
 
     Runner run(&window, &inFont);
-    //sf::Thread drawThread(&Runner::Draw, &run);
-    //drawThread.launch();
+    sf::Thread drawThread(&Runner::Draw, &run);
+    drawThread.launch();
     while(window.isOpen()) {
         run.HandleEvents();
-        run.Draw();
+        //run.Draw();
     }
     return 0;
 }

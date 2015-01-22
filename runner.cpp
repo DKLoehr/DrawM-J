@@ -160,7 +160,7 @@ void Runner::UpdateGraph() {
 }
 
 void Runner::Draw() {
-    //while(window->isOpen()) {
+    while(window->isOpen()) {
         window->clear(sf::Color::White); // Clear in preparation for drawing new stuff
 
         /// Draw GUI elements
@@ -173,7 +173,7 @@ void Runner::Draw() {
         for(int iii = 0; iii < windows.size(); iii++) {
             windows[iii]->Draw();
         }
-    //}
+    }
 }
 
 // Converts a string with a number in it to an integer containing that number
