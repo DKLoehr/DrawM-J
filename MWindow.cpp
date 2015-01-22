@@ -45,6 +45,7 @@ void MWindow::Create(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2u wSize, Vec
     window.create(sf::VideoMode(wSize.x, wSize.y), "");
     window.setPosition(wTopLeft);
 
+
     if(!pic.create(window.getSize().x, window.getSize().y)) {
         std::cout << "Error creating RenderTexture\n";
         exit(-2);
@@ -53,9 +54,6 @@ void MWindow::Create(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2u wSize, Vec
     pic.clear(sf::Color::White);
     graphs.setPosition(0, 0);
     graphs.setTexture(pic.getTexture());
-
-    picBuf.create(window.getSize().x, window.getSize().y);
-    picBuf.clear(sf::Color(255, 255, 255, 0)); // Transparent white
 
     grid = Grid(&window, sf::Vector2i(0, 0), sf::Vector2i(window.getSize()), gTopLeft, gBotRight);
     grid.SetRangeCorners(gTopLeft, gBotRight);
@@ -80,6 +78,7 @@ void MWindow::Create(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2u wSize, Vec
         numIters[iii] = (uint16_t*)malloc(sizeof(uint16_t) * window.getSize().y);
     }
 }
+
 unsigned int MWindow::Iterate(cx* pos, cx* startPos) {
     if(numIterations == NULL) {
         std::cout << "NULL\n";
@@ -111,10 +110,6 @@ void MWindow::IterateGraph() {
     std::clock_t start; // FOR DEBUGGING
     start = std::clock(); // FOR DEBUGGING
 
-    //sf::RenderTexture picBuf;
-    //picBuf.create(window.getSize().x, window.getSize().y);
-    //picBuf.clear(sf::Color(255, 255, 255, 0)); // Transparent white
-
     bool moreIters = (*numIterations > prevNumIterations);
     unsigned int winSizeX = window.getSize().x,
                  winSizeY = window.getSize().y;
@@ -125,42 +120,35 @@ void MWindow::IterateGraph() {
     Vector2ld graphCoords = topLeft;
     graphCoords.y = botRight.y;
     int startNumIters = *numIterations;
+    //pic.clear(sf::Color(0, 0, 0, 0));
 
     std::printf("(%f, %f), (%f, %f) \n", (double)(topLeft.x), (double)(topLeft.y), (double)(botRight.x), (double)(botRight.y));
 
-    unsigned int xLoc = 0, yLoc = winSizeY, iters = 0;
+    unsigned int iters = 0;
     for(unsigned int iii = winSizeY; iii != 0; iii--) {         // Iterate vertically
         for(unsigned int jjj = winSizeX; jjj != 0 ; jjj--) {    // Iterate horizontally
-            if(!interrupted && ((numIters[xLoc][yLoc] > prevNumIterations) && !moreIters ||    // In the set and doing fewer iterations, so ignore
-                                (numIters[xLoc][yLoc] <= prevNumIterations) && moreIters)) {   // Not in the set and doing more iterations, so ignore
+            if(!interrupted && ((numIters[winSizeX - jjj][iii] > prevNumIterations) && !moreIters ||    // In the set and doing fewer iterations, so ignore
+                                (numIters[winSizeX - jjj][iii] <= prevNumIterations) && moreIters)) {   // Not in the set and doing more iterations, so ignore
                 graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
-                xLoc = xLoc + 1;
                 continue;
             }
             iters = Iterate(new cx(graphCoords.x, graphCoords.y));
-            sf::Vertex loc(sf::Vector2f(xLoc, yLoc),
+            sf::Vertex loc(sf::Vector2f(winSizeX - jjj, iii),
                            Colorgen(iters));
-            numIters[xLoc][yLoc] = iters;
+            numIters[winSizeX - jjj][iii] = iters;
             pic.draw(&loc, 1, sf::Points);
             graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
-            xLoc = xLoc + 1;
         }
         /*if(sf::Keyboard::isKeyPressed(sf::Keyboard::K)) { // K key is kill switch -- stop iterating
             interrupted = true;
             return;
         }*/
-        yLoc = yLoc - 1;
-        xLoc = 0;
         graphCoords.x = topLeft.x;       // Reset x coordinate
         graphCoords.y = graphCoords.y + pixelDeltaY;    // Move one pixel down
     }
 
-    //picBuf.display();
-    //graphs.setTexture(picBuf.getTexture());
-    //pic.draw(graphs);
     pic.display();
     graphs.setTexture(pic.getTexture());
-    //picBuf.clear();
 
     interrupted = (*numIterations != startNumIters);
     prevNumIterations = *numIterations;

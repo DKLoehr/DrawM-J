@@ -15,7 +15,6 @@ private:
     sf::RenderWindow window;
     sf::Font* inFont;
     sf::RenderTexture pic;
-    sf::RenderTexture picBuf;
     sf::Sprite graphs;
 
     Grid grid;
