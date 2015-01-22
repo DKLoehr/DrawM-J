@@ -25,7 +25,6 @@ MWindow::MWindow(const MWindow& target) {
                target.grid.GetGraphTopLeft(), target.grid.GetGraphBotRight(), target.numIterations, target.colorMult);
         prevNumIterations = target.prevNumIterations;
         graphs.setTexture(target.pic.getTexture());
-        graphs.setPosition(0, 0);
         pic.draw(graphs);
         pic.display();
         graphs.setTexture(pic.getTexture());
@@ -123,6 +122,8 @@ void MWindow::IterateGraph() {
     Vector2ld graphCoords = topLeft;
     int startNumIters = *numIterations;
 
+    std::printf("(%f, %f), (%f, %f) \n", (double)(topLeft.x), (double)(topLeft.y), (double)(botRight.x), (double)(botRight.y));
+
     unsigned int xLoc = 0, yLoc = 0, iters = 0;
     for(unsigned int iii = winSizeY; iii != 0; iii--) {         // Iterate vertically
         for(unsigned int jjj = winSizeX; jjj != 0 ; jjj--) {    // Iterate horizontally
@@ -155,7 +156,7 @@ void MWindow::IterateGraph() {
     pic.draw(graphs);
     pic.display();
     graphs.setTexture(pic.getTexture());
-    picBuf.clear();
+    //picBuf.clear();
 
     interrupted = (*numIterations != startNumIters);
     prevNumIterations = *numIterations;
@@ -176,10 +177,17 @@ int MWindow::PollEvent(sf::Event& event, Vector2ld** topLeft, Vector2ld** botRig
         return ret;
     }
     if(event.type == sf::Event::MouseMoved) {
-        zoomBox[1].position = sf::Vector2f(event.mouseMove.x, zoomBox[0].position.y);
-        zoomBox[2].position = sf::Vector2f(event.mouseMove.x, event.mouseMove.y);
-        zoomBox[3].position = sf::Vector2f(zoomBox[0].position.x, event.mouseMove.y);
+        if(firstCorner != NULL) {
+            zoomBox[1].position = sf::Vector2f(event.mouseMove.x, zoomBox[0].position.y);
+            zoomBox[2].position = sf::Vector2f(event.mouseMove.x, event.mouseMove.y);
+            zoomBox[3].position = sf::Vector2f(zoomBox[0].position.x, event.mouseMove.y);
+        } else {
+            zoomBox[1].position = sf::Vector2f(0, 0);
+            zoomBox[2].position = sf::Vector2f(0, 0);
+            zoomBox[3].position = sf::Vector2f(0, 0);
+        }
     } else if(event.type == sf::Event::MouseButtonPressed) {
+        std::cout << "Clicky clicked\n";
         if(firstCorner == NULL) {   // Aren't currently selecting a rectangle
             firstCorner = new Vector2ld(grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).x, // Graph coordinates of the first corner
                                         grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).y);
@@ -215,8 +223,9 @@ void MWindow::Draw() {
     window.clear(sf::Color::White);
     window.draw(graphs);
 
-    if(firstCorner != NULL)
+    if(true || firstCorner != NULL) {
         window.draw(zoomBox);
+    }
 
     window.display();
 }

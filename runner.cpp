@@ -41,9 +41,9 @@ void Runner::Init() {
     activeBox = 0; // Start out highlighting the input box
     elements[activeBox]->SetActive(true);
 
-    windows = std::vector<MWindow>(1);
-    windows[0].Create(inFont, sf::Vector2i(0, 89), sf::Vector2u(300, 246), Vector2ld(-2.05, 1.15), Vector2ld(.75, -1.15),
-                      &numIterations, &colorMult);
+    windows = std::vector<MWindow*>(1);
+    windows[0] = new MWindow(inFont, sf::Vector2i(0, 89), sf::Vector2u(300, 246), Vector2ld(-2.05, 1.15), Vector2ld(.75, -1.0015),
+                              &numIterations, &colorMult);
     activeWindow = 0;
 
     window->setPosition(sf::Vector2i(0, 0)); // Start out highlighting the main window
@@ -53,13 +53,14 @@ void Runner::HandleEvents() {
     sf::Event event;
     Vector2ld *newTopLeft = NULL, *newBotRight = NULL;
     for(int iii = 0; iii < windows.size(); iii++) {     // Basic events for all MWindows
-        while(windows[iii].PollEvent(event, &newTopLeft, &newBotRight, (iii == activeWindow))) {
+        while(windows[iii]->PollEvent(event, &newTopLeft, &newBotRight, (iii == activeWindow))) {
             if(newTopLeft != NULL) {
-                windows.push_back(MWindow());
+                windows.push_back(NULL);
                 activeWindow = windows.size() - 1;
-                windows[activeWindow].Create(inFont, sf::Vector2i(300, 300), sf::Vector2u(300, 246), *newTopLeft, *newBotRight,
+                windows[activeWindow]= new MWindow(inFont, sf::Vector2i(300, 300), sf::Vector2u(300, 246), *newTopLeft, *newBotRight,
                                                    &numIterations, &colorMult);
-                windows[activeWindow].UpdateGraph();
+                windows[activeWindow]->UpdateGraph();
+                std::printf("(%f, %f), (%f, %f) \n", (double)(newTopLeft->x), (double)(newTopLeft->y), (double)(newBotRight->x), (double)(newBotRight->y));
                 delete(newTopLeft);
                 delete(newBotRight);
                 newTopLeft = NULL;
@@ -107,7 +108,6 @@ void Runner::SetActiveElement(double x, double y) {
                 activeBox = iii;                        // Update which box is active
                 elements[activeBox]->SetActive(true);   // Activate the newly-active box
             }
-            elements[iii]->OnClick(x, y);               // For checkboxes; toggle them back
             break;                                      // Figured out which box is active, so we can stop looking now
         }
         elements[iii]->OnClick(x, y);                   // For checkboxes; toggle them back
@@ -152,7 +152,7 @@ void Runner::ActivateButtons(sf::Event event) {
 }
 
 void Runner::UpdateGraph() {
-    windows[activeWindow].UpdateGraph();
+    windows[activeWindow]->UpdateGraph();
 }
 
 void Runner::Draw() {
@@ -166,7 +166,7 @@ void Runner::Draw() {
     window->display(); // Display everything we've drawn on the screen
 
     for(int iii = 0; iii < windows.size(); iii++) {
-        windows[iii].Draw();
+        windows[iii]->Draw();
     }
 }
 
