@@ -8,7 +8,12 @@ Runner::Runner(sf::RenderWindow* w, sf::Font* font) :
     Init();
 }
 
-Runner::~Runner() {}
+Runner::~Runner() {
+    for(int iii = windows.size() - 1; iii >= 0; iii--) {
+        delete windows[iii];
+        windows.pop_back();
+    }
+}
 
 
 void Runner::Init() {
@@ -55,10 +60,9 @@ void Runner::HandleEvents() {
     for(int iii = 0; iii < windows.size(); iii++) {     // Basic events for all MWindows
         while(windows[iii]->PollEvent(event, &newTopLeft, &newBotRight, (iii == activeWindow))) {
             if(newTopLeft != NULL) {
-                windows.push_back(NULL);
+                windows.push_back(new MWindow(inFont, sf::Vector2i(300, 300), sf::Vector2u(300, 246), *newTopLeft, *newBotRight,
+                                                   &numIterations, &colorMult));
                 activeWindow = windows.size() - 1;
-                windows[activeWindow]= new MWindow(inFont, sf::Vector2i(300, 300), sf::Vector2u(300, 246), *newTopLeft, *newBotRight,
-                                                   &numIterations, &colorMult);
                 windows[activeWindow]->UpdateGraph();
                 std::printf("(%f, %f), (%f, %f) \n", (double)(newTopLeft->x), (double)(newTopLeft->y), (double)(newBotRight->x), (double)(newBotRight->y));
                 delete(newTopLeft);
@@ -156,18 +160,20 @@ void Runner::UpdateGraph() {
 }
 
 void Runner::Draw() {
-    window->clear(sf::Color::White); // Clear in preparation for drawing new stuff
+    //while(window->isOpen()) {
+        window->clear(sf::Color::White); // Clear in preparation for drawing new stuff
 
-    /// Draw GUI elements
-    for(int iii = 0; iii < elements.size(); iii++) { // Draw each GUI element (textboxes, buttons, checkboxes)
-        elements[iii]->Draw();
-    }
+        /// Draw GUI elements
+        for(int iii = 0; iii < elements.size(); iii++) { // Draw each GUI element (textboxes, buttons, checkboxes)
+            elements[iii]->Draw();
+        }
 
-    window->display(); // Display everything we've drawn on the screen
+        window->display(); // Display everything we've drawn on the screen
 
-    for(int iii = 0; iii < windows.size(); iii++) {
-        windows[iii]->Draw();
-    }
+        for(int iii = 0; iii < windows.size(); iii++) {
+            windows[iii]->Draw();
+        }
+    //}
 }
 
 // Converts a string with a number in it to an integer containing that number

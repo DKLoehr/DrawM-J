@@ -54,6 +54,9 @@ void MWindow::Create(sf::Font* f, sf::Vector2i wTopLeft, sf::Vector2u wSize, Vec
     graphs.setPosition(0, 0);
     graphs.setTexture(pic.getTexture());
 
+    picBuf.create(window.getSize().x, window.getSize().y);
+    picBuf.clear(sf::Color(255, 255, 255, 0)); // Transparent white
+
     grid = Grid(&window, sf::Vector2i(0, 0), sf::Vector2i(window.getSize()), gTopLeft, gBotRight);
     grid.SetRangeCorners(gTopLeft, gBotRight);
 
@@ -108,9 +111,9 @@ void MWindow::IterateGraph() {
     std::clock_t start; // FOR DEBUGGING
     start = std::clock(); // FOR DEBUGGING
 
-    sf::RenderTexture picBuf;
-    picBuf.create(window.getSize().x, window.getSize().y);
-    picBuf.clear(sf::Color(255, 255, 255, 0)); // Transparent white
+    //sf::RenderTexture picBuf;
+    //picBuf.create(window.getSize().x, window.getSize().y);
+    //picBuf.clear(sf::Color(255, 255, 255, 0)); // Transparent white
 
     bool moreIters = (*numIterations > prevNumIterations);
     unsigned int winSizeX = window.getSize().x,
@@ -187,7 +190,6 @@ int MWindow::PollEvent(sf::Event& event, Vector2ld** topLeft, Vector2ld** botRig
             zoomBox[3].position = sf::Vector2f(0, 0);
         }
     } else if(event.type == sf::Event::MouseButtonPressed) {
-        std::cout << "Clicky clicked\n";
         if(firstCorner == NULL) {   // Aren't currently selecting a rectangle
             firstCorner = new Vector2ld(grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).x, // Graph coordinates of the first corner
                                         grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).y);
@@ -221,6 +223,8 @@ void MWindow::SetActive(bool isActive) {
 
 void MWindow::Draw() {
     window.clear(sf::Color::White);
+    //pic.display();
+    //graphs.setTexture(pic.getTexture());
     window.draw(graphs);
 
     if(true || firstCorner != NULL) {

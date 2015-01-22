@@ -15,8 +15,6 @@ public:
 
     void Toggle();
 
-    void SetActive(bool active);
-
     void SetPosition(sf::Vector2f newPos);
     void SetPosition(double x, double y);
 

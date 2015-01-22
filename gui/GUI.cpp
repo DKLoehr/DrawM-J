@@ -47,6 +47,15 @@ sf::Color GUI::GetOutlineColor() {
     return m_rectangle.getOutlineColor();
 }
 
+void GUI::SetActive(bool active) {
+    isActive = active;
+    if(isActive) {
+        m_rectangle.setFillColor(sf::Color::White);
+    } else {
+        m_rectangle.setFillColor(sf::Color(150, 150, 150));
+    }
+}
+
 sf::Vector2f GUI::GetPosition() {
     return m_position;
 }
