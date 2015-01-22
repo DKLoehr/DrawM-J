@@ -125,17 +125,17 @@ void MWindow::IterateGraph() {
     std::printf("(%f, %f), (%f, %f) \n", (double)(topLeft.x), (double)(topLeft.y), (double)(botRight.x), (double)(botRight.y));
 
     unsigned int iters = 0;
-    for(unsigned int iii = winSizeY; iii != 0; iii--) {         // Iterate vertically
+    for(unsigned int iii = winSizeY + 1; iii != 0; iii--) {         // Iterate vertically
         for(unsigned int jjj = winSizeX; jjj != 0 ; jjj--) {    // Iterate horizontally
-            if(!interrupted && ((numIters[winSizeX - jjj][iii] > prevNumIterations) && !moreIters ||    // In the set and doing fewer iterations, so ignore
-                                (numIters[winSizeX - jjj][iii] <= prevNumIterations) && moreIters)) {   // Not in the set and doing more iterations, so ignore
+            if(!interrupted && ((numIters[winSizeX - jjj][iii - 1] > prevNumIterations) && !moreIters ||    // In the set and doing fewer iterations, so ignore
+                                (numIters[winSizeX - jjj][iii - 1] <= prevNumIterations) && moreIters)) {   // Not in the set and doing more iterations, so ignore
                 graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
                 continue;
             }
             iters = Iterate(new cx(graphCoords.x, graphCoords.y));
-            sf::Vertex loc(sf::Vector2f(winSizeX - jjj, iii),
+            sf::Vertex loc(sf::Vector2f(winSizeX - jjj, iii - 1),
                            Colorgen(iters));
-            numIters[winSizeX - jjj][iii] = iters;
+            numIters[winSizeX - jjj][iii - 1] = iters;
             pic.draw(&loc, 1, sf::Points);
             graphCoords.x = graphCoords.x + pixelDeltaX; // Move one pixel to the right
         }
@@ -174,6 +174,7 @@ int MWindow::PollEvent(sf::Event& event, Vector2ld** topLeft, Vector2ld** botRig
             zoomBox[2].position = sf::Vector2f(event.mouseMove.x, event.mouseMove.y);
             zoomBox[3].position = sf::Vector2f(zoomBox[0].position.x, event.mouseMove.y);
         } else {
+            zoomBox[0].position = sf::Vector2f(0, 0);
             zoomBox[1].position = sf::Vector2f(0, 0);
             zoomBox[2].position = sf::Vector2f(0, 0);
             zoomBox[3].position = sf::Vector2f(0, 0);
@@ -188,9 +189,11 @@ int MWindow::PollEvent(sf::Event& event, Vector2ld** topLeft, Vector2ld** botRig
             zoomBox[3] = zoomBox[0];
             zoomBox[4] = zoomBox[0];
         } else {
-            *topLeft = new Vector2ld(*firstCorner);
-            *botRight = new Vector2ld(grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).x, // Graph coordinates of the first corner
-                                      grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y).y);
+            Vector2ld click = grid.WindowToGraph(event.mouseButton.x, event.mouseButton.y); // Window coordinates of the click
+            *topLeft = new Vector2ld(min(click.x, firstCorner->x),
+                                     max(click.y, firstCorner->y));
+            *botRight = new Vector2ld(max(click.x, firstCorner->x),
+                                      min(click.y, firstCorner->y));
             delete(firstCorner);
             firstCorner = NULL;
         }
@@ -202,8 +205,9 @@ int MWindow::PollEvent(sf::Event& event, Vector2ld** topLeft, Vector2ld** botRig
 }
 
 void MWindow::UpdateGraph() {
-    iterThread->wait();
-    iterThread->launch();
+    //iterThread->wait();
+    //iterThread->launch();
+    IterateGraph();
 }
 
 void MWindow::SetActive(bool isActive) {
